@@ -1,4 +1,4 @@
-<?php
+*<?php
 
 	require '../config.php';
 
@@ -72,7 +72,7 @@ function _propasals($min,$max,$special='',$fk_user = 0) {
 	else{
 		$sql ="SELECT p.rowid FROM ".MAIN_DB_PREFIX."propal p
 				LEFT JOIN ".MAIN_DB_PREFIX."propal_extrafields ex ON (ex.fk_object = p.rowid)
-				WHERE ex.proba < ".$max." AND ex.proba>=".$min; 
+				WHERE ex.proba < ".(int)$max." AND ex.proba>=".(int)$min." AND p.fk_statut=1"; 
 	}
 	
 	if($fk_user>0) {
@@ -90,10 +90,12 @@ function _propasals($min,$max,$special='',$fk_user = 0) {
 			$soc = new Societe($db);
 			$soc->fetch($p->socid);
 			
-			$p->total_ht_aff = price($p->total_ht);
-			$p->customerLink = $soc->getNomUrl(1);
-			
-			$Tab[] = $p;
+			$obj = new stdClass;
+			$obj->total_ht_aff = price($p->total_ht);
+			$obj->customerLink = $soc->getNomUrl(1);
+			$obj->total_ht = $p->total_ht;
+
+			$Tab[] = $obj;
 			
 		}
 		

@@ -43,7 +43,7 @@ $(document).ready(function() {
 });
 
 function refreshPac() {
-	
+/*	console.log('refreshPac');*/
 	
 	$('div.step').find('ul').each(function(i, item) {
 		
@@ -67,9 +67,9 @@ function refreshPac() {
 			}
 			,dataType:'json'
 		}).done(function(data) {
-			
+console.log('la');			
 			var total = 0;
-			
+console.log(data);	
 			$.each(data, function(i,item) {
 				
 				$li = $('<li propal-id="'+item.id+'" />');

@@ -58,11 +58,13 @@
 	}
 	
 function _card(&$TPac) {
-	global $conf,$db,$user,$langs,$form;
+	global $conf,$db,$user,$langs;
 	
 	llxHeader('', 'PAC', '', '', 0, 0, array('/pac/js/pac.js' ), array('/pac/css/pac.css') );
 	dol_fiche_head();
 	
+	$form=new Form($db);
+
 	echo '<div>';
 	echo $form->select_dolusers($user->id,'fk_user',1);
 	
@@ -77,10 +79,10 @@ function _card(&$TPac) {
 		?>
 		<div class="step" style="width:<?php echo $width; ?>%">
 			<h2><?php echo $TData['label']; ?></h2>
+			<div class="total"></div>			
 			<ul class="<?php echo empty($TData['special']) ? 'connectedSortable' : 'special'; ?>" id="step-<?php echo $k ?>" min="<?php echo __val($TData['min'],0) ?>" max="<?php echo __val($TData['max'],0) ?>"  special="<?php echo __val($TData['special'],'') ?>">
 				
 			</ul>
-			<div class="total"></div>			
 		</div>
 		<?php	
 	}
