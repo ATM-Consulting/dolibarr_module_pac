@@ -64,7 +64,7 @@ function _card(&$TPac) {
 	dol_fiche_head();
 	
 	echo '<div>';
-	$form->select_users($user->id,'fk_user',1,'',0,'','');
+	echo $form->select_dolusers($user->id,'fk_user',1);
 	
 	echo '<button id="refresh">'.$langs->trans('Refresh').'</button>';
 	
