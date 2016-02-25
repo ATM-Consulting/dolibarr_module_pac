@@ -7,6 +7,11 @@ div.step ul {
 	margin:0 0 0 0;
 	padding:0 0 0 0;
 }
+div.step ul.special {
+	background-color: #eee;
+}
+
+
 
 div.step li[propal-id] { 
 
@@ -16,4 +21,10 @@ div.step li[propal-id] {
 	box-shadow: 2px 2px 5px 0px #cfcfcf;
 	padding:5px 5px;
 	margin: 0 2px 10px 2px;
+}
+div.step div.total {
+	background-color: #666;
+	color:#fff;
+	font-size: 36px;
+	text-align: right;
 }

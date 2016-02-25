@@ -29,6 +29,18 @@
 			,'min'=>60
 			,'max'=>90
 		)
+		,array(
+			'label'=>'Signé'
+			,'min'=>100
+			,'max'=>100
+			,'special'=>'signed'
+		)
+		,array(
+			'label'=>'Non signé'
+			,'min'=>100
+			,'max'=>100
+			,'special'=>'notsigned'
+		)
 		
 		//TODO special signé, non signé
 		//TODO finir le module, il ne s'agissait que d'une esquisse
@@ -46,10 +58,17 @@
 	}
 	
 function _card(&$TPac) {
-	global $conf,$db,$user,$langs;
+	global $conf,$db,$user,$langs,$form;
 	
-	llxHeader('', $title='PAC', '', '', 0, 0, array('/pac/js/pac.js' ), array('/pac/css/pac.css') );
+	llxHeader('', 'PAC', '', '', 0, 0, array('/pac/js/pac.js' ), array('/pac/css/pac.css') );
 	dol_fiche_head();
+	
+	echo '<div>';
+	$form->select_users($user->id,'fk_user',1,'',0,'','');
+	
+	echo '<button id="refresh">'.$langs->trans('Refresh').'</button>';
+	
+	echo '</div><div style="clear: both;"></div>';
 	
 	$width = 100 / count($TPac) - 1;
 	
@@ -57,10 +76,11 @@ function _card(&$TPac) {
 		
 		?>
 		<div class="step" style="width:<?php echo $width; ?>%">
-			<?php echo $TData['label']; ?>
-			<ul class="connectedSortable" id="step-<?php echo $k ?>" min="<?php echo __val($TData['min'],0) ?>" max="<?php echo __val($TData['max'],0) ?>"  special="<?php echo __val($TData['special'],'') ?>">
+			<h2><?php echo $TData['label']; ?></h2>
+			<ul class="<?php echo empty($TData['special']) ? 'connectedSortable' : 'special'; ?>" id="step-<?php echo $k ?>" min="<?php echo __val($TData['min'],0) ?>" max="<?php echo __val($TData['max'],0) ?>"  special="<?php echo __val($TData['special'],'') ?>">
 				
-			</ul>			
+			</ul>
+			<div class="total"></div>			
 		</div>
 		<?php	
 	}
