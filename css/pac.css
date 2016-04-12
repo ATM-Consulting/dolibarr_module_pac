@@ -1,9 +1,10 @@
 div.step {
 	float:left;
 	border-right:1px dashed #ccc;
+	border-top:1px dashed #ccc;
 }
 div.step ul {
-	min-height: 500px;	
+	min-height: 200px;	
 	margin:0 0 0 0;
 	padding:0 0 0 0;
 }
@@ -11,10 +12,18 @@ div.step ul.special {
 	background-color: #eee;
 }
 
+div.step ul li.receiver {
+	background-color: #99ffff;
+	border-radius: 5px;
+	padding:5px 5px;
+	margin: 0 2px 10px 2px;
+	list-style: none;
+	height: 100px;
+}
 
 
 div.step li[propal-id] { 
-
+	background-color:#fff;
 	list-style: none;
 	border:1px solid #bbb;
 	border-radius: 5px;
@@ -28,3 +37,12 @@ div.step div.total {
 	font-size: 36px;
 	text-align: right;
 }
+
+div.period {
+	background-color: #aaa;
+	color:#666;
+	font-size: 16px;
+	text-align: left;
+	padding:5px 5px;
+}
+

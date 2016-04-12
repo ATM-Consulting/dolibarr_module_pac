@@ -12,7 +12,7 @@
 	switch ($get) {
 		case 'propals':
 		
-			__out(_propasals((int)GETPOST('min'),(int)GETPOST('max'),GETPOST('special'),GETPOST('fk_user')), 'json');
+			__out(_propasals((int)GETPOST('min'),(int)GETPOST('max'),(int)GETPOST('start'),(int)GETPOST('end'),GETPOST('special'),GETPOST('fk_user')), 'json');
 						
 			break;
 		default:
@@ -23,7 +23,7 @@
 	switch ($put) {
 		case 'propal':
 		
-			_update_proba_propal(GETPOST('propalid'), GETPOST('proba'), GETPOST('special'));
+			_update_proba_propal(GETPOST('propalid'), GETPOST('proba'), GETPOST('end'), GETPOST('special'));
 						
 			break;
 		default:
@@ -31,7 +31,7 @@
 			break;
 	}
 	
-function _update_proba_propal($fk_propal, $proba, $special = '') {
+function _update_proba_propal($fk_propal, $proba,$nb_month, $special = '') {
 	//TODO pouvoir signer propal directmeent à ce niveau ?
 	
 	global $db,$langs,$user,$conf;
@@ -40,13 +40,16 @@ function _update_proba_propal($fk_propal, $proba, $special = '') {
 	if($p->fetch($fk_propal)) {
 		
 		$p->array_options['options_proba'] = (int)$proba;
+		$p->array_options['options_date_cloture_prev'] = strtotime('+'.$nb_month.' month' );
+		
+		
 		$p->update_extrafields($user);
 	}
 	
 	
 }	
 
-function _propasals($min,$max,$special='',$fk_user = 0) {
+function _propasals($min,$max,$start,$end,$special='',$fk_user = 0) {
 	global $db,$langs,$user,$conf;
 	
 	
@@ -56,7 +59,7 @@ function _propasals($min,$max,$special='',$fk_user = 0) {
 	
 	$PDOdb=new TPDOdb; 
 	
-	if(!empty($special)) {
+	if(!empty($special) && empty($start)) {
 			
 		if($special=='signed') {
 			$sql = "SELECT p.rowid FROM ".MAIN_DB_PREFIX."propal p	WHERE p.fk_statut = 2 AND p.date_valid> (NOW() - INTERVAL 30 DAY) "; 
@@ -72,7 +75,21 @@ function _propasals($min,$max,$special='',$fk_user = 0) {
 	else{
 		$sql ="SELECT p.rowid FROM ".MAIN_DB_PREFIX."propal p
 				LEFT JOIN ".MAIN_DB_PREFIX."propal_extrafields ex ON (ex.fk_object = p.rowid)
-				WHERE ex.proba < ".$max." AND ex.proba>=".$min; 
+				WHERE ex.proba < ".$max." AND ex.proba>=".$min;
+		
+		if(empty($start)) {
+			$sql.=" AND (ex.date_cloture_prev IS NULL OR ex.date_cloture_prev < NOW() ) ";
+		}
+		else {
+			$sql.=" AND (ex.date_cloture_prev >= (NOW() + INTERVAL ".$start." MONTH) ) ";			
+		}
+		
+		if($end>0) {
+			$sql.=" AND (ex.date_cloture_prev < (NOW() + INTERVAL ".$end." MONTH) ";
+			if(empty($start)) { $sql.=" OR ex.date_cloture_prev IS NULL "; }
+			$sql.=" ) ";			
+		}
+		 	  	 
 	}
 	
 	if($fk_user>0) {

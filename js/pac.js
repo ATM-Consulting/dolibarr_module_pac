@@ -15,12 +15,16 @@ $(document).ready(function() {
 	  
     $( "div.step>ul.connectedSortable" ).sortable({
       connectWith: ".connectedSortable"
+      ,placeholder: 'receiver'
       ,receive:function(event, ui) {
       	
       	$li = ui.item;
       	var propalid = $li.attr('propal-id');
       	$ul = $li.closest('ul');
+      	
       	var proba = $ul.attr('min');
+      	
+      	var end = $ul.attr('month_end');
       	
       	$.ajax({
 			url:"script/interface.php"
@@ -28,6 +32,7 @@ $(document).ready(function() {
 				'put':'propal'
 				,'propalid':propalid
 				,'proba':proba
+				,'end': end
 			}
 			,dataType:'json'
 		});
@@ -53,6 +58,8 @@ function refreshPac() {
 		
 		var min = $ul.attr('min');
 		var max = $ul.attr('max');
+		var start = $ul.attr('month_start');
+		var end = $ul.attr('month_end');
 		var special = $ul.attr('special');
 		
 		$.ajax({
@@ -61,6 +68,8 @@ function refreshPac() {
 				'get':'propals'
 				,'min':min
 				,'max':max
+				,'start':start
+				,'end':end
 				,'special':special
 				,'fk_user':$('#fk_user').val()
 				
@@ -69,6 +78,8 @@ function refreshPac() {
 		}).done(function(data) {
 			
 			var total = 0;
+			
+			var height = 200;
 			
 			$.each(data, function(i,item) {
 				
@@ -80,7 +91,14 @@ function refreshPac() {
 				
 				$ul.append($li);
 				
+				if(height<$li.height()) {
+					height = $li.height();
+					console.log(height);
+				} 
+				
 			});
+			
+			$ul.closest('div').find('ul').css('min-height', height);
 			
 			$ul.closest('div').find('.total').html(total.formatMoney(2, ',', ' '));
 			

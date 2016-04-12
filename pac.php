@@ -4,6 +4,7 @@
 	
 	$action = GETPOST('action');
 	
+	//TODO conf
 	$TPac=array(
 		/*array(
 			'Label'=>'Opportunity'
@@ -46,18 +47,40 @@
 		//TODO finir le module, il ne s'agissait que d'une esquisse
 	);
 	
+	$TPeriod=array(
+		array(
+			'label'=>'dans le mois'
+			,'end'=>1 // nombre de jour mois
+		)
+		,array(
+			'label'=>'entre 1 et 3 mois'
+			,'start'=>1 
+			,'end'=>3
+		)
+		,array(
+			'label'=>'entre 3 et 9 mois'
+			,'start'=>3 
+			,'end'=>9
+		
+		)
+		,array(
+			'label'=>'au delà'
+			,'start'=>9 
+		)
+	);
+	
 	switch ($action) {
 		case 'value':
 			
 			break;
 		default:
 		
-			_card($TPac);
+			_card($TPac,$TPeriod);
 			
 			break;
 	}
 	
-function _card(&$TPac) {
+function _card(&$TPac,&$TPeriod) {
 	global $conf,$db,$user,$langs,$form;
 	
 	llxHeader('', 'PAC', '', '', 0, 0, array('/pac/js/pac.js' ), array('/pac/css/pac.css') );
@@ -70,21 +93,36 @@ function _card(&$TPac) {
 	
 	echo '</div><div style="clear: both;"></div>';
 	
-	$width = 100 / count($TPac) - 1;
+	$width = floor(100 / count($TPac) * 10) /10 ;
 	
 	foreach($TPac as $k=>&$TData) {
+		?><div style="width:<?php echo $width; ?>%; display:inline-block;"><h2><?php echo $TData['label']; ?></h2></div><?php
+	
+	}
+	foreach($TPeriod as $kp=>$period) {
 		
 		?>
-		<div class="step" style="width:<?php echo $width; ?>%">
-			<h2><?php echo $TData['label']; ?></h2>
-			<ul class="<?php echo empty($TData['special']) ? 'connectedSortable' : 'special'; ?>" id="step-<?php echo $k ?>" min="<?php echo __val($TData['min'],0) ?>" max="<?php echo __val($TData['max'],0) ?>"  special="<?php echo __val($TData['special'],'') ?>">
-				
-			</ul>
-			<div class="total"></div>			
-		</div>
-		<?php	
+		<div class="period"><?php echo $period['label']; ?></div>
+		<div>
+			<?php
+		
+		
+		
+		foreach($TPac as $k=>&$TData) {
+			
+			?>
+			<div class="step" style="width:<?php echo $width; ?>%">
+				<ul class="<?php echo empty($TData['special']) ? 'connectedSortable' : 'special'; ?>" id="step-<?php echo $kp.'-'.$k ?>" min="<?php echo __val($TData['min'],0) ?>" max="<?php echo __val($TData['max'],0) ?>"  month_start="<?php echo __val($period['start'],0) ?>"  month_end="<?php echo __val($period['end'],0) ?>"  special="<?php echo __val($TData['special'],'') ?>">
+					
+				</ul>
+				<div class="total"></div>			
+			</div>
+			<?php	
+		}
+		
+		?></div><div style="clear: both;"></div><?php
+		
 	}
-	
 	?>
 	<div style="clear: both;"></div>
 	<?php
