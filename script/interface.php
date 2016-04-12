@@ -108,6 +108,8 @@ function _propasals($min,$max,$start,$end,$special='',$fk_user = 0) {
 			$soc->fetch($p->socid);
 			
 			$obj = new stdClass;
+			
+			$obj->ref = $p->ref;
 			$obj->total_ht_aff = price($p->total_ht);
 			$obj->customerLink = $soc->getNomUrl(1);
 			$obj->total_ht = $p->total_ht;
