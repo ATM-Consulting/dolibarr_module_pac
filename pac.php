@@ -81,11 +81,13 @@
 	}
 	
 function _card(&$TPac,&$TPeriod) {
-	global $conf,$db,$user,$langs,$form;
+	global $conf,$db,$user,$langs;
 	
 	llxHeader('', 'PAC', '', '', 0, 0, array('/pac/js/pac.js' ), array('/pac/css/pac.css') );
 	dol_fiche_head();
 	
+	$form=new Form($db);
+
 	echo '<div>';
 	echo $form->select_dolusers($user->id,'fk_user',1);
 	
