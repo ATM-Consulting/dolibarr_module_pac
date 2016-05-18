@@ -217,11 +217,11 @@ class modPac extends DolibarrModules
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
 		 
-		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=commercial',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
 									'titre'=>$langs->transnoentitiesnoconv('bestPropales'),
-									'mainmenu'=>'commercial',
-									'leftmenu'=>'pac',
+									'mainmenu'=>'',
+									'leftmenu'=>'',
 									'url'=>'/pac/best_propales.php',
 									'langs'=>'pac@pac',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
 									'position'=>110,
