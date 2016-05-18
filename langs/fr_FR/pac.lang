@@ -11,3 +11,6 @@ PacLeftMenu = Processus Action Commerciale
 
 #RAPPORT DES PROPALES LES PLUS PROMETTEUSES
 bestPropales=Top des propositions commerciales
+
+#Histogramme des propales par commercial
+graphPropalCommercial=Nombre de propales par commercial
