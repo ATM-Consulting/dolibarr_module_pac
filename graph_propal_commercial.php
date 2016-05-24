@@ -14,7 +14,6 @@
 	print_fiche_titre($langs->trans("graphPropalCommercial"));
 	
 	
-	$date_deb= date('Y-m-d');
 	_print_filtres();
 	_print_graph();
 	

@@ -14,3 +14,7 @@ bestPropales=Top des propositions commerciales
 
 #Histogramme des propales par commercial
 graphPropalCommercial=Nombre de propales par commercial
+propalCommercial=Propositions par commercial
+
+#Evenements associés au commercial par type 
+events_salesman=Evenements par commercial
