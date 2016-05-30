@@ -26,7 +26,7 @@
 		
 		$sql = 'SELECT COUNT(p.rowid) AS nbPropales, p.fk_user_author AS auteur ';
 		$sql .= 'FROM '.MAIN_DB_PREFIX.'propal p ';
-		$sql .= 'WHERE (p.fk_statut = 1) AND  (p.tms BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") ';
+		$sql .= 'WHERE (p.fk_statut = 1) AND  (p.datec BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") ';
 		$sql .= 'GROUP BY p.fk_user_author ';
 		$sql .= 'ORDER BY p.fk_user_author ';
 
