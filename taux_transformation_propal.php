@@ -8,10 +8,10 @@
 	
 	
 	
-	llxHeader('',$langs->trans('graphPropalCommercial'));
+	llxHeader('',$langs->trans('PropalTransformed'));
 	
-	print dol_get_fiche_head($langs->trans('graphPropalCommercial'));
-	print_fiche_titre($langs->trans("graphPropalCommercial"));
+	print dol_get_fiche_head($langs->trans('PropalTransformed'));
+	print_fiche_titre($langs->trans("PropalTransformed"));
 	
 	
 	_print_filtres();
@@ -122,14 +122,14 @@ function _get_propales_signees_commercial($date_deb, $date_fin){
 		$explorer->actions = array("dragToZoom", "rightClickToReset");
 		
 		
-		$listeview = new TListviewTBS('graphPropalCommercial');
+		$listeview = new TListviewTBS('PropalTransformed');
 		
 		print $listeview->renderArray($PDOdb, $TData
 			,array(
 				'type' => 'chart'
 				,'chartType' => 'ColumnChart'
 				,'liste'=>array(
-					'titre'=> $langs->transnoentities('graphPropalCommercial')
+					'titre'=> $langs->transnoentities('PropalTransformed')
 				)
 				,'hAxis'=>array('title'=> 'commercial')
 				,'vAxis'=>array('title'=> 'Nombre de propales')
