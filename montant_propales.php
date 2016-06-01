@@ -66,11 +66,11 @@
 		print '</tr>';
 		print '<tr>';
 		print '<td>Date de début : </td>';
-		print '<td>'.$form->calendrier('', 'date_deb', ($_REQUEST['date_deb'])? $_REQUEST['date_deb'] : '').'</td>';
+		print '<td>'.$form->calendrier('', 'date_deb', (GETPOST('date_deb'))? GETPOST('date_deb') : '').'</td>';
 		print '</tr>';
 		print '<tr>';
 		print '<td>Date de fin : </td>';
-		print '<td>'.$form->calendrier('', 'date_fin', ($_REQUEST['date_fin'])? $_REQUEST['date_fin'] : '').'</td>';
+		print '<td>'.$form->calendrier('', 'date_fin', (GETPOST('date_fin'))? GETPOST('date_fin') : '').'</td>';
 		print '</tr>';
 	
 	    print '<tr><td colspan="2" align="center">'.$form->btsubmit('Valider', '').'</td></tr>';
@@ -86,8 +86,8 @@
 		$user = new User($db);
 		$user->fetch($idUser);
 		
-		$date_d=preg_replace('/\//','-',GETPOST('date_deb'));
-		$date_f=preg_replace('/\//','-',GETPOST('date_fin'));
+		$date_d=str_replace('/', '-', GETPOST('date_deb'));
+		$date_f=str_replace('/', '-', GETPOST('date_fin'));
 		$date_deb=date('Y-m-d', strtotime($date_d));
 		$date_fin=date('Y-m-d', strtotime($date_f));
 		
