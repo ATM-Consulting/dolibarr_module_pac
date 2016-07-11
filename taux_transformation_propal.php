@@ -84,8 +84,8 @@ function _get_propales_signees_commercial($date_deb, $date_fin){
 		$TData =array();
 		$PDOdb = new TPDOdb;
 		
-		if(empty(GETPOST('date_deb')))$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
-		if(empty(GETPOST('date_fin')))$date_fin=date('Y-m-d');
+		if(GETPOST('date_deb')=='')$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
+		if(GETPOST('date_fin')=='')$date_fin=date('Y-m-d');
 		
 		$TPropales= _get_propales_commercial($date_deb, $date_fin);
 		$TPropalesSignees = _get_propales_signees_commercial($date_deb, $date_fin);

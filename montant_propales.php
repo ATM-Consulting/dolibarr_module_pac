@@ -90,9 +90,9 @@
 		$date_f=str_replace('/', '-', GETPOST('date_fin'));
 		$date_deb=date('Y-m-d', strtotime($date_d));
 		$date_fin=date('Y-m-d', strtotime($date_f));
-		
-		if(empty(GETPOST('date_deb')))$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
-		if(empty(GETPOST('date_fin')))$date_fin=date('Y-m-d');
+			
+		if(GETPOST('date_deb')=='')$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
+		if(GETPOST('date_fin')=='')$date_fin=date('Y-m-d');
 		$param = '&userid='.$idUser.'&date_deb='.$date_deb.'&date_fin='.$date_fins;
 		if(!empty($idUser)){
 			$TData = _get_propales($idUser, $date_deb, $date_fin);

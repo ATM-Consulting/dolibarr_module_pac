@@ -109,8 +109,8 @@
 		$date_deb=date('Y-m-d', strtotime($date_d));
 		$date_fin=date('Y-m-d', strtotime($date_f));
 		
-		if(empty(GETPOST('date_deb')))$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
-		if(empty(GETPOST('date_fin')))$date_fin=date('Y-m-d');
+		if(GETPOST('date_deb')=='')$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
+		if(GETPOST('date_fin')=='')$date_fin=date('Y-m-d');
 		
 		$sql = 'SELECT COUNT(ac.id) AS nbEvent, acr.fk_element AS user, cac.libelle AS libelle FROM '.MAIN_DB_PREFIX.'actioncomm ac ';
 		$sql .= 'INNER JOIN '.MAIN_DB_PREFIX.'actioncomm_resources acr ON acr.fk_actioncomm = ac.id ';
@@ -146,8 +146,8 @@
 		$date_deb=date('Y-m-d', strtotime($date_d));
 		$date_fin=date('Y-m-d', strtotime($date_f));
 		
-		if(empty(GETPOST('date_deb')))$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
-		if(empty(GETPOST('date_fin')))$date_fin=date('Y-m-d');
+		if(GETPOST('date_deb')=='')$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
+		if(GETPOST('date_fin')=='')$date_fin=date('Y-m-d');
 		
 		
 		$sql = 'SELECT COUNT(s.rowid) AS socid, s.fk_user_creat AS usrcreate FROM '.MAIN_DB_PREFIX.'societe s ';
