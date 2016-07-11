@@ -23,7 +23,7 @@
 	switch ($put) {
 		case 'propal':
 		
-			_update_proba_propal(GETPOST('propalid'), GETPOST('proba'), GETPOST('end'), GETPOST('special'));
+			_update_proba_propal((int)GETPOST('propalid'), GETPOST('proba'), GETPOST('end'), GETPOST('special'));
 						
 			break;
 		default:
@@ -75,7 +75,10 @@ function _propasals($min,$max,$start,$end,$special='',$fk_user = 0) {
 	else{
 		$sql ="SELECT p.rowid FROM ".MAIN_DB_PREFIX."propal p
 				LEFT JOIN ".MAIN_DB_PREFIX."propal_extrafields ex ON (ex.fk_object = p.rowid)
-				WHERE ex.proba < ".(int)$max." AND ex.proba>=".(int)$min;
+				WHERE 1 ";
+				
+		if(empty($min)) $sql.=" AND (ex.proba >=0 OR ex.proba IS NULL) AND (ex.proba < ".(int)$max. " OR ex.proba IS NULL)";
+		else $sql.=" AND ex.proba < ".(int)$max. " AND ex.proba>=".(int)$min;
 		
 		if(empty($start)) {
 			$sql.=" AND (ex.date_cloture_prev IS NULL OR ex.date_cloture_prev < NOW() ) ";
@@ -109,9 +112,11 @@ function _propasals($min,$max,$start,$end,$special='',$fk_user = 0) {
 			
 			$obj = new stdClass;
 			
+			$obj->id = $p->id;
 			$obj->ref = $p->ref;
 			$obj->total_ht_aff = price($p->total_ht);
 			$obj->customerLink = $soc->getNomUrl(1);
+			$obj->link = $p->getNomUrl(1);
 			$obj->total_ht = $p->total_ht;
 
 			$Tab[] = $obj;
