@@ -24,11 +24,30 @@
 		$sortfield = GETPOST('sortfield');
 		$sortorder = GETPOST('sortorder');
 		$TData = array();
-		$sql = 'SELECT p.rowid AS rowid, p.datec, p.ref, p.ref_client, p.fin_validite FROM '.MAIN_DB_PREFIX.'propal p ';
-		$sql .= 'WHERE p.fk_user_author = '.$iduser.' AND (p.datec BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") AND (p.fk_statut=1 OR p.fk_statut = 2) ';
-		if (!empty($sortfield) && !empty($sortorder)){var_dump('toto');
+		
+		$type= GETPOST('type');
+		if(empty($type))$type='signed';
+		
+		 
+		if($type === 'signed' ){
+			$date_field ='date_cloture';
+			$statut = 2;
+		}
+		else{
+			$date_field = 'date_valid';
+			$statut = 1;
+		} 
+		
+		$sql = 'SELECT p.rowid , p.datec, p.ref, p.ref_client, p.fin_validite ,p.fk_soc
+			FROM '.MAIN_DB_PREFIX.'propal p LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
+			WHERE sc.fk_user = '.$iduser.' 
+			AND (p.'.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") 
+			AND p.fk_statut='.$statut.' ';
+			
+		if (!empty($sortfield) && !empty($sortorder)){
 			$sql .= 'ORDER BY '.$sortfield.' '.$sortorder.' ';
 		}
+
 		$resql = $db->query($sql);
 		
 		if ($resql){
@@ -52,7 +71,7 @@
 	}
 	
 	function _get_filtre($form){
-		global $db;
+		global $db, $langs;
 
 		$formol = new Form($db);
 	    
@@ -62,6 +81,9 @@
 		print '<td>Commercial : </td>';
 		print '<td>';
 		print $formol->select_users(GETPOST('userid'), 'userid', 1);
+		print '</td>';
+		print '<td>';
+		print $formol->selectarray('type', array('signed'=>$langs->trans('Signed'),'valid'=>$langs->trans('Validated')), GETPOST('type') );
 		print '</td>';
 		print '</tr>';
 		print '<tr>';
@@ -107,7 +129,7 @@
 			print_liste_field_titre($langs->trans('Date'),$_SERVER["PHP_SELF"],'p.datec','',$param, 'align="center"',$sortfield,$sortorder);
 			print_liste_field_titre($langs->trans('DateEndPropalShort'),$_SERVER["PHP_SELF"],'p.fin_validite','',$param, 'align="center"',$sortfield,$sortorder);
 			print_liste_field_titre($langs->trans('AmountHT'),$_SERVER["PHP_SELF"],'p.total_ht','',$param, 'align="right"',$sortfield,$sortorder);
-			print_liste_field_titre($langs->trans('Author'),$_SERVER["PHP_SELF"],'u.login','',$param,'align="center"',$sortfield,$sortorder);
+			print_liste_field_titre($langs->trans('CompanySalesman'),$_SERVER["PHP_SELF"],'u.login','',$param,'align="center"',$sortfield,$sortorder);
 			print_liste_field_titre($langs->trans('Status'),$_SERVER["PHP_SELF"],'p.fk_statut','',$param,'align="right"',$sortfield,$sortorder);
 			print_liste_field_titre('',$_SERVER["PHP_SELF"],"",'','','',$sortfield,$sortorder,'maxwidthsearch ');
 			print "</tr>";
