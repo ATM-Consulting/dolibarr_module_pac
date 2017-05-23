@@ -7,8 +7,9 @@ dol_include_once('/categories/class/categorie.class.php');
 
 llxHeader();
 
-$c=new Categorie($db);
-$TCat = $c->get_all_categories(Categorie::TYPE_CUSTOMER, $conf->global->PAC_PARENT_CATEG_FOR_REPORT);
+$TCat=array();
+_get_category($TCat,(int)$conf->global->PAC_PARENT_CATEG_FOR_REPORT);
+
 
 dol_fiche_head();
 
@@ -128,3 +129,20 @@ echo '</table>';
 
 dol_fiche_end();
 llxFooter();
+
+
+function _get_category(&$TCat, $fk_parent) {
+	global $conf, $db, $langs, $user;
+	
+	$c=new Categorie($db);
+	$c->fetch($fk_parent);
+	
+	if($c->id>0) $TCat[] = $c;
+	
+	$Tab = $c->get_filles();
+	foreach($Tab as &$cat) {
+		_get_category($TCat, $cat->id);
+	}
+	
+	
+}
