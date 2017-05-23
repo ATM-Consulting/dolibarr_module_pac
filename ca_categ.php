@@ -77,6 +77,7 @@ foreach($TTotal as &$row ) {
 	
 }
 
+
 echo '<table class="liste" width="100%">';
 
 echo '<tr class="liste_titre"><td>'.$langs->trans('Category').'</td>';
@@ -97,7 +98,9 @@ foreach($TTotal as &$row ) {
 	
 	$cat = &$row['cat'];
 	
-	echo '<tr class="oddeven"><td>'.$cat->label.'</td>';
+	$ways = $cat->print_all_ways(" &gt;&gt; ",'',1);
+//	var_dump($cat->label, $ways);
+	echo '<tr class="oddeven"><td>'.$ways[0].'</td>';
 	echo '<td>'.count($row[fk_socs]).'</td>';
 	echo '<td>'.$row['nb_propal'].'</td>';
 	
