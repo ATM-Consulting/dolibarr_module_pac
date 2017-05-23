@@ -27,7 +27,7 @@ foreach($TCat as &$cat) {
 	$resultset= $db->query("SELECT f.fk_soc, f.total, f.datef FROM ".MAIN_DB_PREFIX."facture f 
 			LEFT JOIN ".MAIN_DB_PREFIX."societe s ON (s.rowid = f.fk_soc)
 			LEFT JOIN ".MAIN_DB_PREFIX."categorie_societe cs ON (s.rowid=cs.fk_soc)
-			WHERE f.fk_statut IN (0,2,3) AND cs.fk_categorie IN  (".implode(',', $TCatIds).")
+			WHERE f.type IN (0,2,3) AND fk_statut IN (1,2) AND cs.fk_categorie IN  (".implode(',', $TCatIds).")
 			GROUP BY f.rowid
 			ORDER BY f.datef
 		");
