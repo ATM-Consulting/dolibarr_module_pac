@@ -21,10 +21,14 @@ foreach($TCat as &$cat) {
 
 	if(empty($TTotal[$cat->id]))$TTotal[$cat->id]=array('cat'=>$cat, 'datas'=>array(999999=>0), 'fk_socs'=>array(),'nb_propal'=>0);
 	
+	$TCatIds=array();
+	_get_ids_child($TCatIds,$cat->id);
+	
 	$resultset= $db->query("SELECT f.fk_soc, f.total, f.datef FROM ".MAIN_DB_PREFIX."facture f 
 			LEFT JOIN ".MAIN_DB_PREFIX."societe s ON (s.rowid = f.fk_soc)
 			LEFT JOIN ".MAIN_DB_PREFIX."categorie_societe cs ON (s.rowid=cs.fk_soc)
-			WHERE f.fk_statut IN (0,2,3) AND cs.fk_categorie = ".$cat->id."
+			WHERE f.fk_statut IN (0,2,3) AND cs.fk_categorie IN  (".implode(',', $TCatIds).")
+			GROUP BY f.rowid
 			ORDER BY f.datef
 		");
 	
@@ -48,10 +52,10 @@ foreach($TCat as &$cat) {
 		$TTotal[$cat->id]['datas'][999999]+=$obj->total;
 	}
 	
-	$resultset= $db->query("SELECT count(*) as nb FROM ".MAIN_DB_PREFIX."propal p 
+	$resultset= $db->query("SELECT COUNT(p.rowid) as nb FROM ".MAIN_DB_PREFIX."propal p 
 			LEFT JOIN ".MAIN_DB_PREFIX."societe s ON (s.rowid = p.fk_soc)
 			LEFT JOIN ".MAIN_DB_PREFIX."categorie_societe cs ON (s.rowid=cs.fk_soc)
-			WHERE p.fk_statut IN (2,4) AND cs.fk_categorie = ".$cat->id."
+			WHERE p.fk_statut IN (2,4) AND cs.fk_categorie IN  (".implode(',', $TCatIds).")
 			ORDER BY p.datep
 		");
 	if($resultset === false) {
@@ -131,6 +135,21 @@ echo '</table>';
 dol_fiche_end();
 llxFooter();
 
+function _get_ids_child(&$TCatIds,$fk_parent) {
+	global $conf, $db, $langs, $user;
+	
+	$c=new Categorie($db);
+	$c->fetch($fk_parent);
+	
+	if($c->id>0) $TCatIds[] = $c->id;
+	
+	$Tab = $c->get_filles();
+	foreach($Tab as &$cat) {
+		_get_ids_child($TCatIds, $cat->id);
+	}
+	
+	
+}
 
 function _get_category(&$TCat, $fk_parent) {
 	global $conf, $db, $langs, $user;
