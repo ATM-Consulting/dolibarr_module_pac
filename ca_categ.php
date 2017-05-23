@@ -116,7 +116,7 @@ foreach($TTotal as &$row ) {
 		//	var_dump(array($total,$old_total,$evolution));
 		}
 		
-		echo '<td nowrap="nowrap" align="right">'.price($total).( empty($evolution) ? '' : ' ('.sprintf("%+d",$evolution).'%)' ).'</td>';
+		echo '<td nowrap="nowrap" align="right">'.price($total,0,'',1,-1,0).( empty($evolution) ? '' : ' ('.sprintf("%+d",$evolution).'%)' ).'</td>';
 		
 		
 		$old_total = $total;
