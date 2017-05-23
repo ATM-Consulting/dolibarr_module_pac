@@ -8,7 +8,7 @@ dol_include_once('/categories/class/categorie.class.php');
 llxHeader();
 
 $c=new Categorie($db);
-$TCat = $c->get_all_categories(Categorie::TYPE_CUSTOMER);
+$TCat = $c->get_all_categories(Categorie::TYPE_CUSTOMER, $conf->global->PAC_PARENT_CATEG_FOR_REPORT);
 
 dol_fiche_head();
 
@@ -86,7 +86,7 @@ echo '<td>'.$langs->trans('NbPropal').'</td>';
 
 foreach($TDate as $datem=>$dummy) {
 	
-	echo '<td>'.$datem/*dol_print_date(strtotime(date($datem.'01')))*/.'</td>';
+	echo '<td >'.$datem/*dol_print_date(strtotime(date($datem.'01')))*/.'</td>';
 	
 }
 
@@ -104,9 +104,20 @@ foreach($TTotal as &$row ) {
 	echo '<td>'.count($row[fk_socs]).'</td>';
 	echo '<td>'.$row['nb_propal'].'</td>';
 	
+	$old_total = 0;
 	foreach($row['datas'] as $date=>$total) {
+	
+		$evolution =0;
+		if(!empty($old_total) && $date!=999999) {
+			
+			$evolution = ($total - $old_total > 0 || empty($total)) ? round( ($total / $old_total) * 100) : -round( ( $old_total / $total ) * 100);
+		//	var_dump(array($total,$old_total,$evolution));
+		}
 		
-		echo '<td>'.price($total).'</td>';
+		echo '<td align="right">'.price($total).( empty($evolution) ? '' : ' ('.sprintf("%+d",$evolution).'%)' ).'</td>';
+		
+		
+		$old_total = $total;
 		
 	}
 	
