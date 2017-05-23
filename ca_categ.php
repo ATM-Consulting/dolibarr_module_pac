@@ -24,7 +24,7 @@ foreach($TCat as &$cat) {
 	$resultset= $db->query("SELECT f.fk_soc, f.total, f.datef FROM ".MAIN_DB_PREFIX."facture f 
 			LEFT JOIN ".MAIN_DB_PREFIX."societe s ON (s.rowid = f.fk_soc)
 			LEFT JOIN ".MAIN_DB_PREFIX."categorie_societe cs ON (s.rowid=cs.fk_soc)
-			WHERE f.fk_statut IN (1,2) AND cs.fk_categorie = ".$cat->id."
+			WHERE f.fk_statut IN (0,2,3) AND cs.fk_categorie = ".$cat->id."
 			ORDER BY f.datef
 		");
 	
@@ -92,7 +92,7 @@ foreach($TDate as $datem=>$dummy) {
 	
 }
 
-echo '<td>Total</td>';
+echo '<td>'.$langs->trans('TotalHT').'</td>';
 
 echo '</tr>';
 
