@@ -4,11 +4,13 @@
 require 'config.php';
 dol_include_once('/categories/class/categorie.class.php');
 
+$langs->load('pac@pac');
 
 llxHeader();
 
-$c=new Categorie($db);
-$TCat = $c->get_all_categories(Categorie::TYPE_CUSTOMER, $conf->global->PAC_PARENT_CATEG_FOR_REPORT);
+$TCat=array();
+_get_category($TCat,(int)$conf->global->PAC_PARENT_CATEG_FOR_REPORT);
+
 
 dol_fiche_head();
 
@@ -49,7 +51,7 @@ foreach($TCat as &$cat) {
 	$resultset= $db->query("SELECT count(*) as nb FROM ".MAIN_DB_PREFIX."propal p 
 			LEFT JOIN ".MAIN_DB_PREFIX."societe s ON (s.rowid = p.fk_soc)
 			LEFT JOIN ".MAIN_DB_PREFIX."categorie_societe cs ON (s.rowid=cs.fk_soc)
-			WHERE p.fk_statut IN (2) AND cs.fk_categorie = ".$cat->id."
+			WHERE p.fk_statut IN (2,4) AND cs.fk_categorie = ".$cat->id."
 			ORDER BY p.datep
 		");
 	if($resultset === false) {
@@ -78,7 +80,7 @@ foreach($TTotal as &$row ) {
 }
 
 
-echo '<table class="liste" width="100%">';
+echo '<table class="liste border" width="100%">';
 
 echo '<tr class="liste_titre"><td>'.$langs->trans('Category').'</td>';
 echo '<td>'.$langs->trans('NbCustomer').'</td>';
@@ -128,3 +130,20 @@ echo '</table>';
 
 dol_fiche_end();
 llxFooter();
+
+
+function _get_category(&$TCat, $fk_parent) {
+	global $conf, $db, $langs, $user;
+//	var_dump($fk_parent);
+	$c=new Categorie($db);
+	$c->fetch($fk_parent);
+	
+	if($c->id>0) $TCat[] = $c;
+	
+	$Tab = $c->get_filles();
+	foreach($Tab as &$cat) {
+		_get_category($TCat, $cat->id);
+	}
+	
+	
+}
