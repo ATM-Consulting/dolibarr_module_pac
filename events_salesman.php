@@ -116,7 +116,7 @@
 							
 							<?php } ?>
 							<td class="soc"><?php echo (int)$TData2['soc_created'] ?></td>
-							<td class="propal" align="right"><?php echo price($TData2['propal']['validated']).img_help(1,$TData2['propal']['validated_refs']); ?></td>
+							<td class="propal" align="right"><?php echo (int)$TData2['propal']['validated'].img_help(1,$TData2['propal']['validated_refs']); ?></td>
 							<td class="propal" align="right"><?php echo price($TData2['propal']['amount_validated']) ?></td>
 							<td class="taux" align="right"><?php 
 								if($TData2['propal']['validated']>0) {
@@ -128,7 +128,7 @@
 								}
 								
 							?></td>
-							<td class="propal_signed" align="right"><?php echo price($TData2['propal']['signed']).img_help(1,$TData2['propal']['signed_refs']);?></td>
+							<td class="propal_signed" align="right"><?php echo (int)$TData2['propal']['signed'].img_help(1,$TData2['propal']['signed_refs']);?></td>
 							<td class="propal_signed" align="right"><?php echo price($TData2['propal']['amount_signed']) ?></td>
 						</tr>
 					<?php	
@@ -196,8 +196,19 @@
 		$TData = array();
 		
 		$sql = 'SELECT COUNT(s.rowid) AS nb, s.fk_user_creat AS usrcreate FROM '.MAIN_DB_PREFIX.'societe s ';
+
+		$fk_usergroup = GETPOST('fk_usergroup','int');
+                if($fk_usergroup >0){
+                        $sql .= 'INNER JOIN '.MAIN_DB_PREFIX.'usergroup_user ugu ON (s.fk_user_creat = ugu.fk_user) ';
+                        
+                }
+
 		$sql .= 'WHERE s.datec BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
-		$sql .= 'GROUP BY s.fk_user_creat ';
+		if($fk_usergroup >0){
+                        $sql.=" AND ugu.fk_usergroup=". $fk_usergroup;
+                }
+
+		$sql .= ' GROUP BY s.fk_user_creat ';
 		
 		$resql = $db->query($sql);
 		
@@ -206,6 +217,10 @@
 				$TEvent[$line->usrcreate]['soc_created']=$line->nb;
 			}
 		}
+		else {
+			var_dump($db);
+		}
+
 		return $TData;
 		
 	}
@@ -213,46 +228,71 @@
 	function _get_nb_propal(&$TEvent, $date_deb,$date_fin){
 		global $db;
 		
-		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, sc.fk_user, GROUP_CONCAT(p.ref) as refs
-			FROM '.MAIN_DB_PREFIX.'propal p LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
-				LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = sc.fk_user)
-			WHERE u.statut=1 ';
+		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, p.fk_user_author, ec.fk_socpeople, GROUP_CONCAT(p.ref) as refs
+			FROM '.MAIN_DB_PREFIX.'propal p 
+				LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON (ec.element_id = p.rowid AND fk_c_type_contact = 31)
+				LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = ec.fk_socpeople OR u.rowid = p.fk_user_author) ';
+
+		$fk_usergroup = GETPOST('fk_usergroup','int');
+                if($fk_usergroup >0){
+                        $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'usergroup_user ugu ON (u.rowid = ugu.fk_user) ';
+                }
+
+		$sql.='	WHERE u.statut=1 ';
+		 if($fk_usergroup >0){
+                        $sql.=" AND ugu.fk_usergroup=". $fk_usergroup;
+                }
 		
-		$sql.= ' AND (p.date_valid BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
-			AND p.fk_statut = 1
-		GROUP BY sc.fk_user ';
+		$sql.= ' AND (p.datep BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
+			AND p.fk_statut > 0
+		GROUP BY u.rowid ';
 		
 		$resql = $db->query($sql);
 //echo $sql;		
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
-				$line->fk_user=(int)$line->fk_user;
-				$TEvent[$line->fk_user]['propal']['validated']=$line->nb;
-				$TEvent[$line->fk_user]['propal']['amount_validated']=$line->amount;
-				$TEvent[$line->fk_user]['propal']['validated_refs']=$line->refs;
+				
+
+				$fk_user=empty($line->fk_socpeople) ? (int)$line->fk_user_author : (int) $line->fk_socpeople;
+				$TEvent[$fk_user]['propal']['validated']=$line->nb;
+				$TEvent[$fk_user]['propal']['amount_validated']=$line->amount;
+				$TEvent[$fk_user]['propal']['validated_refs']=$line->refs;
 				
 			}
 		}
 		
 		
-		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, sc.fk_user, GROUP_CONCAT(p.ref) as refs
-			FROM '.MAIN_DB_PREFIX.'propal p LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
-				LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = sc.fk_user)
-			WHERE u.statut=1 ';
-		
-		$sql.= ' AND (p.date_cloture BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
-			AND p.fk_statut = 2
-		GROUP BY sc.fk_user ';
+		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, p.fk_user_author, ec.fk_socpeople, GROUP_CONCAT(p.ref) as refs
+			FROM '.MAIN_DB_PREFIX.'propal p
+				LEFT JOIN '.MAIN_DB_PREFIX.'propal_extrafields pex ON (pex.fk_object=p.rowid)
+				LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON (ec.element_id = p.rowid AND fk_c_type_contact = 31)
+				LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = ec.fk_socpeople OR u.rowid = p.fk_user_author) ';
+
+		$fk_usergroup = GETPOST('fk_usergroup','int');
+                if($fk_usergroup >0){
+                        $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'usergroup_user ugu ON (u.rowid = ugu.fk_user) ';
+                }
+
+		$sql.='	WHERE u.statut=1 ';
+		if($fk_usergroup >0){
+                        $sql.=" AND ugu.fk_usergroup=". $fk_usergroup;
+                }
+		$sql.= ' AND (pex.date_signature BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
+			AND p.fk_statut IN (2,4)
+		GROUP BY u.rowid ';
 		
 		$resql = $db->query($sql);
 		
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
-				$line->fk_user=(int)$line->fk_user;
-				$TEvent[$line->fk_user]['propal']['signed']=$line->nb;
-				$TEvent[$line->fk_user]['propal']['amount_signed']=$line->amount;
-				$TEvent[$line->fk_user]['propal']['signed_refs']=$line->refs;
+				$fk_user=empty($line->fk_socpeople) ? (int)$line->fk_user_author : (int) $line->fk_socpeople;
+				$TEvent[$fk_user]['propal']['signed']=$line->nb;
+				$TEvent[$fk_user]['propal']['amount_signed']=$line->amount;
+				$TEvent[$fk_user]['propal']['signed_refs']=$line->refs;
 			}
+		}
+		else {
+			var_dump($db);
 		}
 		
 		
