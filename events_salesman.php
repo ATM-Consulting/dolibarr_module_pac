@@ -215,16 +215,18 @@
 		
 		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, sc.fk_user, GROUP_CONCAT(p.ref) as refs
 			FROM '.MAIN_DB_PREFIX.'propal p LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
-			WHERE 1 ';
+				LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = sc.fk_user)
+			WHERE u.statut=1 ';
 		
 		$sql.= ' AND (p.date_valid BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
 			AND p.fk_statut = 1
 		GROUP BY sc.fk_user ';
 		
 		$resql = $db->query($sql);
-		
+//echo $sql;		
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
+				$line->fk_user=(int)$line->fk_user;
 				$TEvent[$line->fk_user]['propal']['validated']=$line->nb;
 				$TEvent[$line->fk_user]['propal']['amount_validated']=$line->amount;
 				$TEvent[$line->fk_user]['propal']['validated_refs']=$line->refs;
@@ -235,7 +237,8 @@
 		
 		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, sc.fk_user, GROUP_CONCAT(p.ref) as refs
 			FROM '.MAIN_DB_PREFIX.'propal p LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
-			WHERE 1 ';
+				LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = sc.fk_user)
+			WHERE u.statut=1 ';
 		
 		$sql.= ' AND (p.date_cloture BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
 			AND p.fk_statut = 2
@@ -245,6 +248,7 @@
 		
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
+				$line->fk_user=(int)$line->fk_user;
 				$TEvent[$line->fk_user]['propal']['signed']=$line->nb;
 				$TEvent[$line->fk_user]['propal']['amount_signed']=$line->amount;
 				$TEvent[$line->fk_user]['propal']['signed_refs']=$line->refs;
