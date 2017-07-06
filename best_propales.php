@@ -28,12 +28,7 @@
 		$TData = array();
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
-				$proba='';
-				if ($line->proba==4)$proba='100%';
-				else if ($line->proba==3)$proba='75%';
-				else if ($line->proba==2)$proba='50%';
-				else if ($line->proba==1)$proba='25%';
-				else $proba='';
+				$proba=$line->proba.'%';
 				
 				$TData[] = array(
 					"rowid"          => $line->rowid,

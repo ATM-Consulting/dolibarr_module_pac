@@ -27,7 +27,6 @@
 		
 		$type= GETPOST('type');
 		if(empty($type))$type='signed';
-		
 		 
 		if($type === 'signed' ){
 			$date_field ='date_cloture';
@@ -38,10 +37,12 @@
 			$statut = 1;
 		} 
 		
-		$sql = 'SELECT p.rowid , p.datec, p.ref, p.ref_client, p.fin_validite ,p.fk_soc
+		$sql = 'SELECT p.rowid , p.datec, p.ref, p.ref_client, p.fin_validite ,p.fk_soc, sc.fk_user
 			FROM '.MAIN_DB_PREFIX.'propal p LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
-			WHERE sc.fk_user = '.$iduser.' 
-			AND (p.'.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") 
+			WHERE 1 ';
+			
+		if($iduser>0) $sql.= ' AND sc.fk_user = '.$iduser; 
+		$sql.= ' AND (p.'.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") 
 			AND p.fk_statut='.$statut.' ';
 			
 		if (!empty($sortfield) && !empty($sortorder)){
@@ -54,7 +55,8 @@
 			while ($line = $db->fetch_object($resql)){
 				
 				$TData[] = array(
-					'idPropale' => $line->rowid
+						'idPropale' => $line->rowid
+						,'fk_user'=>$line->fk_user
 				);
 			}
 		}
@@ -104,9 +106,7 @@
 	function _print_rapport(){
 		global $db, $langs;
 		
-		$idUser = GETPOST('userid');
-		$user = new User($db);
-		$user->fetch($idUser);
+		$idUser=GETPOST('userid');
 		
 		$date_d=str_replace('/', '-', GETPOST('date_deb'));
 		$date_f=str_replace('/', '-', GETPOST('date_fin'));
@@ -116,10 +116,11 @@
 		if(GETPOST('date_deb')=='')$date_deb=date('Y-m-d' , strtotime(date('Y-m-d'))-(60*60*24*30));
 		if(GETPOST('date_fin')=='')$date_fin=date('Y-m-d');
 		$param = '&userid='.$idUser.'&date_deb='.$date_deb.'&date_fin='.$date_fins;
-		if(!empty($idUser)){
+		
 			$TData = _get_propales($idUser, $date_deb, $date_fin);
 		
-			print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">';
+			print 'Propales signées sur date de clôture, propales validées sur date de validatin
+			<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">';
 		
 			print '<tr class="liste_titre">';
 			print_liste_field_titre($langs->trans('Ref'),$_SERVER["PHP_SELF"],'p.ref','',$param,'',$sortfield,$sortorder);
@@ -189,7 +190,9 @@
 				print '<td align="right">'.price($propal->total_ht)."</td>";
 		
 				print '<td align="center">';
-				print $user->getLoginUrl(1);
+				$u = new User($db);
+				$u->fetch($data['fk_user']);
+				print $u->getLoginUrl(1);
 				print "</td>";		
 				print '<td align="right">'.$propal->LibStatut($propal->statut, 2).'</td>';		
 				print "</tr>";
@@ -208,6 +211,6 @@
 					}
 		
 			print '</table>';
-		}
+		
 		
 	}

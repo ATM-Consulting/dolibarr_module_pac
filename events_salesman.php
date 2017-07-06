@@ -24,7 +24,7 @@
 	}
 	
 	
-	
+	$db->query("SET SQL_MODE='';");
 	
 	echo dol_get_fiche_head($langs->trans('events_salesman'));
 	print_fiche_titre($langs->trans("events_salesman"));
@@ -68,7 +68,15 @@
 		.soc {
 			background-color:#ddffdd;
 		}
-		
+		.propal {
+			background-color:#ddffff;
+		}
+		.propal_signed {
+			background-color:#ffffdd;
+		}
+		.taux {
+			background-color:#ffddff;
+		}
 		</style>
 		
 		<div style="padding-bottom: 25px;">
@@ -80,6 +88,11 @@
 							<th class="liste_titre"><div class="rotate90"><?php echo $TData_titre[$code] ?></div></th>
 						<?php } ?>
 						<th class="liste_titre soc"><div class="rotate90">Nombre de tiers crées</div></th>
+						<th class="liste_titre propal"><div class="rotate90">Nombre de propale créées</div></th>
+						<th class="liste_titre propal"><div class="rotate90">Montant</div></th>
+						<th class="liste_titre taux"><div class="rotate90">Tx. Transfo <?php echo img_help(1,'Propales ouvertes sur la période sur propales signées sur la période / Montant propales ouvertes sur la période sur montant propales signées sur la période') ?></div></th>
+						<th class="liste_titre propal_signed"><div class="rotate90">Nombre de propale signées</div></th>
+						<th class="liste_titre propal_signed"><div class="rotate90">Montant</div></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -102,7 +115,21 @@
 								</td>
 							
 							<?php } ?>
-							<td class="soc"><?php echo $TData2['soc_created'] ?></td>
+							<td class="soc"><?php echo (int)$TData2['soc_created'] ?></td>
+							<td class="propal" align="right"><?php echo price($TData2['propal']['validated']).img_help(1,$TData2['propal']['validated_refs']); ?></td>
+							<td class="propal" align="right"><?php echo price($TData2['propal']['amount_validated']) ?></td>
+							<td class="taux" align="right"><?php 
+								if($TData2['propal']['validated']>0) {
+									echo round($TData2['propal']['signed'] / $TData2['propal']['validated'] * 100).'% 
+									/ '.round($TData2['propal']['amount_signed'] / $TData2['propal']['amount_validated'] * 100).'%'; 
+								}
+								else {
+									echo 'N/A';
+								}
+								
+							?></td>
+							<td class="propal_signed" align="right"><?php echo price($TData2['propal']['signed']).img_help(1,$TData2['propal']['signed_refs']);?></td>
+							<td class="propal_signed" align="right"><?php echo price($TData2['propal']['amount_signed']) ?></td>
 						</tr>
 					<?php	
 					}
@@ -121,8 +148,6 @@
 		global $db,$TCatAff;
 		
 		$TData = array();
-		
-		$db->query("SET SQL_MODE='';");
 		
 		$sql = 'SELECT cac.code ,COUNT(ac.id) AS nbEvent, acr.fk_element AS user, cac.libelle AS libelle 
 					FROM '.MAIN_DB_PREFIX.'actioncomm ac ';
@@ -165,7 +190,7 @@
 		
 	}
 	
-	function _get_nb_soc_created($date_deb,$date_fin){
+	function _get_nb_soc_created(&$TEvent, $date_deb,$date_fin){
 		global $db;
 		
 		$TData = array();
@@ -175,17 +200,60 @@
 		$sql .= 'GROUP BY s.fk_user_creat ';
 		
 		$resql = $db->query($sql);
-
+		
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
-				
-				$TData[$line->usrcreate] =$line->nb;
+				$TEvent[$line->usrcreate]['soc_created']=$line->nb;
 			}
 		}
 		return $TData;
 		
 	}
-
+	
+	function _get_nb_propal(&$TEvent, $date_deb,$date_fin){
+		global $db;
+		
+		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, sc.fk_user, GROUP_CONCAT(p.ref) as refs
+			FROM '.MAIN_DB_PREFIX.'propal p LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
+			WHERE 1 ';
+		
+		$sql.= ' AND (p.date_valid BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
+			AND p.fk_statut = 1
+		GROUP BY sc.fk_user ';
+		
+		$resql = $db->query($sql);
+		
+		if ($resql){
+			while ($line = $db->fetch_object($resql)){
+				$TEvent[$line->fk_user]['propal']['validated']=$line->nb;
+				$TEvent[$line->fk_user]['propal']['amount_validated']=$line->amount;
+				$TEvent[$line->fk_user]['propal']['validated_refs']=$line->refs;
+				
+			}
+		}
+		
+		
+		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, sc.fk_user, GROUP_CONCAT(p.ref) as refs
+			FROM '.MAIN_DB_PREFIX.'propal p LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
+			WHERE 1 ';
+		
+		$sql.= ' AND (p.date_cloture BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
+			AND p.fk_statut = 2
+		GROUP BY sc.fk_user ';
+		
+		$resql = $db->query($sql);
+		
+		if ($resql){
+			while ($line = $db->fetch_object($resql)){
+				$TEvent[$line->fk_user]['propal']['signed']=$line->nb;
+				$TEvent[$line->fk_user]['propal']['amount_signed']=$line->amount;
+				$TEvent[$line->fk_user]['propal']['signed_refs']=$line->refs;
+			}
+		}
+		
+		
+	}
+	
 	function _print_filtres($date_deb,$date_fin){
 		global $db, $langs;
 		
@@ -227,11 +295,9 @@
 		$TData = array();
 		
 		$TEvent = _get_infos_events($date_deb,$date_fin);
-		$TSoc = _get_nb_soc_created($date_deb,$date_fin);
-		foreach ($TEvent as $fk_user => $data){
-			$TEvent[$fk_user]['soc_created'] = $TSoc[$fk_user];
-		}
-
+		
+		_get_nb_soc_created($TEvent, $date_deb,$date_fin);
+		_get_nb_propal($TEvent, $date_deb,$date_fin);
 		
 		return $TEvent;
 	}

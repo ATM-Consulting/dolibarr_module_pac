@@ -9,13 +9,14 @@
 	
 	
 	llxHeader('',$langs->trans('graphPropalCommercial'));
-	
+	$db->query("SET SQL_MODE='';");
 	print dol_get_fiche_head($langs->trans('graphPropalCommercial'));
 	print_fiche_titre($langs->trans("graphPropalCommercial"));
 	
 	
 	_print_filtres();
 	_print_graph();
+	
 	
 	
 	function _get_propales_commercial($date_deb, $date_fin){
@@ -26,7 +27,7 @@
 		
 		$sql = 'SELECT COUNT(p.rowid) AS nbPropales, p.tms AS dateO, p.fk_user_author AS auteur, SUM(p.total_ht) AS total ';
 		$sql .= 'FROM '.MAIN_DB_PREFIX.'propal p ';
-		$sql .= 'WHERE p.tms BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
+		$sql .= 'WHERE p.datep BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
 		$sql .= 'GROUP BY p.fk_user_author ';
 		$sql .= 'ORDER BY p.rowid ';
 
@@ -43,6 +44,10 @@
 				);
 			}
 		}
+		else{
+			var_dump($db);
+		}
+	//	var_dump($TData);
 		return $TData;
 		
 	}
