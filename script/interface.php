@@ -75,7 +75,7 @@ function _propasals($min,$max,$start,$end,$special='',$fk_user = 0) {
 	else{
 		$sql ="SELECT p.rowid FROM ".MAIN_DB_PREFIX."propal p
 				LEFT JOIN ".MAIN_DB_PREFIX."propal_extrafields ex ON (ex.fk_object = p.rowid)
-				WHERE 1 ";
+				WHERE fk_statut=1 ";
 				
 		if(empty($min)) $sql.=" AND (ex.proba >=0 OR ex.proba IS NULL) AND (ex.proba < ".(int)$max. " OR ex.proba IS NULL)";
 		else $sql.=" AND ex.proba < ".(int)$max. " AND ex.proba>=".(int)$min;

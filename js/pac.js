@@ -84,7 +84,7 @@ function refreshPac() {
 			$.each(data, function(i,item) {
 				
 				$li = $('<li propal-id="'+item.id+'" />');
-				$li.append('<h3>'+item.ref+' : '+item.total_ht_aff+'</h3>'); //TODO complete aff
+				$li.append('<h3>'+item.link+' : '+item.total_ht_aff+'</h3>'); //TODO complete aff
 				$li.append('<div>'+item.customerLink+'</div>');
 				
 				total+=parseFloat(item.total_ht);
