@@ -160,7 +160,7 @@
 											$societe->client = 2;
 										}
 										
-										$TSociete[$societe->client][$societe->id] = $societe;
+										$TSociete[$societe->client][] = $societe;
 									}
 									
 									$TNB=array();
