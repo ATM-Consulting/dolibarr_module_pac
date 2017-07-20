@@ -90,7 +90,7 @@
 						<th class="liste_titre soc"><div class="rotate90">Nombre de tiers crées</div></th>
 						<th class="liste_titre propal"><div class="rotate90">Nombre de propale créées</div></th>
 						<th class="liste_titre propal"><div class="rotate90">Montant</div></th>
-						<th class="liste_titre taux"><div class="rotate90">Tx. Transfo <?php echo img_help(1,'Propales ouvertes sur la période sur propales signées sur la période / Montant propales ouvertes sur la période sur montant propales signées sur la période') ?></div></th>
+						<th class="liste_titre taux"><div class="rotate90">Tx. Transfo <?php echo img_help(1,'Propales signées sur la période sur propales signées+non signées sur la période / Montant propales signées sur la période sur montant propales signées+non signées sur la période') ?></div></th>
 						<th class="liste_titre propal_signed"><div class="rotate90">Nombre de propale signées</div></th>
 						<th class="liste_titre propal_signed"><div class="rotate90">Montant</div></th>
 					</tr>
@@ -119,9 +119,9 @@
 							<td class="propal" align="right"><?php echo (int)$TData2['propal']['validated'].img_help(1,$TData2['propal']['validated_refs']); ?></td>
 							<td class="propal" align="right"><?php echo price($TData2['propal']['amount_validated']) ?></td>
 							<td class="taux" align="right"><?php 
-								if($TData2['propal']['validated']>0) {
-									echo round($TData2['propal']['signed'] / $TData2['propal']['validated'] * 100).'% 
-									/ '.round($TData2['propal']['amount_signed'] / $TData2['propal']['amount_validated'] * 100).'%'; 
+								if($TData2['propal']['signed'] + $TData2['propal']['notsigned']>0) {
+									echo round($TData2['propal']['signed'] / ($TData2['propal']['signed'] + $TData2['propal']['notsigned']) * 100).'% 
+									/ '.round($TData2['propal']['amount_signed'] / ($TData2['propal']['amount_signed'] + $TData2['propal']['amount_notsigned']) * 100).'%'; 
 								}
 								else {
 									echo 'N/A';
@@ -153,7 +153,8 @@
 					FROM '.MAIN_DB_PREFIX.'actioncomm ac ';
 		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.'actioncomm_resources acr ON (acr.fk_actioncomm = ac.id) ';
 		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.'c_actioncomm cac ON (cac.id = ac.fk_action) ';
-		
+		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.' ';	
+
 		$fk_usergroup = GETPOST('fk_usergroup','int');
 		if($fk_usergroup >0){
 			$sql .= 'INNER JOIN '.MAIN_DB_PREFIX.'usergroup_user ugu ON (acr.fk_element = ugu.fk_user) ';
@@ -166,7 +167,7 @@
 			$sql.=" AND ugu.fk_usergroup=".	$fk_usergroup;
 		}
 		
-		$sql .= ' GROUP BY cac.libelle, acr.fk_element ';
+		$sql .= ' GROUP BY cac.code, acr.fk_element ';
 		$sql .= ' ORDER BY acr.fk_element';
 		//echo $sql;
 		$resql = $db->query($sql);
@@ -203,7 +204,7 @@
                         
                 }
 
-		$sql .= 'WHERE s.datec BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
+		$sql .= 'WHERE s.datec BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" AND s.fournisseur=0 ';
 		if($fk_usergroup >0){
                         $sql.=" AND ugu.fk_usergroup=". $fk_usergroup;
                 }
@@ -295,6 +296,38 @@
 			var_dump($db);
 		}
 		
+		$sql = 'SELECT COUNT(p.rowid) as nb , SUM(p.total_ht) as amount, p.fk_user_author, ec.fk_socpeople, GROUP_CONCAT(p.ref) as refs
+                        FROM '.MAIN_DB_PREFIX.'propal p
+                                LEFT JOIN '.MAIN_DB_PREFIX.'propal_extrafields pex ON (pex.fk_object=p.rowid)
+                                LEFT JOIN '.MAIN_DB_PREFIX.'element_contact ec ON (ec.element_id = p.rowid AND fk_c_type_contact = 31)
+                                LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = ec.fk_socpeople OR u.rowid = p.fk_user_author) ';
+
+                $fk_usergroup = GETPOST('fk_usergroup','int');
+                if($fk_usergroup >0){
+                        $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'usergroup_user ugu ON (u.rowid = ugu.fk_user) ';
+                }
+
+                $sql.=' WHERE u.statut=1 ';
+                if($fk_usergroup >0){
+                        $sql.=" AND ugu.fk_usergroup=". $fk_usergroup;
+                }
+                $sql.= ' AND (p.datep BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
+                        AND p.fk_statut IN (3)
+                GROUP BY u.rowid ';
+
+                $resql = $db->query($sql);
+
+                if ($resql){
+                        while ($line = $db->fetch_object($resql)){
+                                $fk_user=empty($line->fk_socpeople) ? (int)$line->fk_user_author : (int) $line->fk_socpeople;
+                                $TEvent[$fk_user]['propal']['notsigned']=$line->nb;
+                                $TEvent[$fk_user]['propal']['amount_notsigned']=$line->amount;
+                                $TEvent[$fk_user]['propal']['notsigned_refs']=$line->refs;
+                        }
+                }
+                else {
+                        var_dump($db);
+                }
 		
 	}
 	
