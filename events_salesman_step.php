@@ -67,6 +67,7 @@ table#rapport_depassement td, table#rapport_depassement th {
 	white-space: nowrap;
 	border-right: 1px solid #D8D8D8;
 	border-bottom: 1px solid #D8D8D8;
+	overflow:hidden;
 }
 
 div.rotate90 {
@@ -74,10 +75,11 @@ div.rotate90 {
 	transform: rotate(90deg);
 	display: block;
 	height: 115px;
-	width: 50px;
+	width: 30px;
 	text-align: left;
 	position: relative;
 	left: 15px;
+	overflow:visible;
 }
 
 .soc {
@@ -131,9 +133,9 @@ div.rotate90 {
 						<th class="liste_titre propal_encours" rowspan="2"><div class="rotate90">Montant encours</div></th>
 					</tr>
 					<tr style="text-align:left;" class="liste_titre nodrag nodrop">
-						<?php foreach ($TData_step  as $step=>$dummy){ ?>
+						<?php foreach ($TCatAff as $code=>$dummy){ foreach ($TData_step  as $step=>$dummy){ ?>
 							<th class="liste_titre"><div class="rotate90"><?php echo $TData_step[$step] ?></div></th>
-						<?php } ?>
+						<?php }} ?>
 					</tr>
 				</thead>
 				<tbody>
