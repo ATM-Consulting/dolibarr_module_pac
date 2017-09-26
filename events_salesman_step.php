@@ -5,55 +5,55 @@
 	dol_include_once('/user/class/user.class.php');
 	dol_include_once('/core/lib/usergroups.lib.php');
 	dol_include_once('/comm/propal/class/propal.class.php');
-	
-	
-	
+
+
+
 	llxHeader('',$langs->trans('events_salesman'));
-	
+
 	if(GETPOST('date_deb')=='') {
 		$date_deb = date('Y-m-01');
 		$date_fin = date('Y-m-t');
-		
+
 	}
 	else {
 		$date_d=str_replace('/', '-', GETPOST('date_deb'));
 		$date_f=str_replace('/', '-', GETPOST('date_fin'));
 		$date_deb=date('Y-m-d', strtotime($date_d));
 		$date_fin=date('Y-m-d', strtotime($date_f));
-		
+
 	}
-	
-	
+
+
 	$db->query("SET SQL_MODE='';");
-	
+
 	echo dol_get_fiche_head($langs->trans('events_salesman'));
 	print_fiche_titre($langs->trans("events_salesman"));
 	_print_filtres($date_deb,$date_fin);
 	echoRapport($date_deb,$date_fin);
 
 	$TCatAff=array();
-	
+
 	function getSociete($fk_soc) {
 		global $TSocieteCache, $user, $db, $langs;
-		
+
 		if(empty($TSocieteCache))$TSocieteCache = array();
-		
+
 		if(!isset($TSocieteCache[$fk_soc])) {
-			
+
 			$TSocieteCache[$fk_soc] = new Societe($db);
 			$TSocieteCache[$fk_soc]->fetch($fk_soc);
-			
+
 		}
-		
+
 		return $TSocieteCache[$fk_soc];
 	}
-	
-	
+
+
 	function echoRapport($date_deb,$date_fin){
 		global $db, $langs,$TCatAff;
-		
-		
-		
+
+
+
 		dol_include_once('/core/lib/date.lib.php');
 		$fk_statut=GETPOST("fk_statut");
 		$TData_titre = _categ();
@@ -76,7 +76,7 @@
 			text-align: left;
 			position:relative;
 			left:15px;
-			
+
 		}
 		.soc {
 			background-color:#ddffdd;
@@ -93,11 +93,11 @@
 		.propal_encours {
 			background-color:#ffdddd;
 		}
-		
+
 		.client {
 			color:#009900;
 		}
-		
+
 		.prospect {
 			color:#ff00ff;
 		}
@@ -105,10 +105,10 @@
 		.newprospect {
 			color:#0000ff;
 		}
-		
-		
+
+
 		</style>
-		
+
 		<div style="padding-bottom: 25px;">
 			<table id="rapport_depassement" class="noborder" width="100%">
 				<thead>
@@ -129,76 +129,76 @@
 				</thead>
 				<tbody>
 					<?php
-					
+
 					foreach ($TData as $fk_user=>$TData2){
-						
+
 						$user = new User($db);
 						$user->fetch($fk_user);
-						
+
 						?>
 						<tr>
 							<td><?php echo $user->getNomUrl(1); ?></td>
-							
-							<?php foreach($TCatAff as $code=>$dummy) { 
-								
-								?><td><?php 
-								
+
+							<?php foreach($TCatAff as $code=>$dummy) {
+
+								?><td><?php
+
 								$aff_data = $TData2[$code]['nb'];
-								
+
 								if(!empty($TData2[$code]['TFk_soc'])) {
-									
+
 									$TSociete = array();
 									foreach($TData2[$code]['TFk_soc'] as $fk_soc) {
 										$societe = getSociete($fk_soc);
-										
-										if(($societe->client == 2 || $societe->client == 3) 
+
+										if(($societe->client == 2 || $societe->client == 3)
 										&& $societe->date_creation > strtotime('-3month')) {
 											$societe->client = 7;
 										}
-										
+
 										if($societe->client == 2 || $societe->client == 3) {
 											$societe->client = 2;
 										}
-										
+
 										$TSociete[$societe->client][] = $societe;
 									}
-									
+
 									$TNB=array();
 									if(count($TSociete[1]))$TNB['client'] = '<span class="client" title="nb. client">'.count($TSociete[1]).'</span>';
 									if(count($TSociete[2]))$TNB['prospect'] = '<span class="prospect" title="nb. prospect">'.count($TSociete[2]).'</span>';
 									if(count($TSociete[7]))$TNB['newprospect'] = '<span class="newprospect" title="nb. prospect de moins de 3 mois">'.count($TSociete[7]).'</span>';
-									
+
 									if(!empty($TNB)) {
-										
+
 										$aff_data.=' ('.implode(' + ',$TNB).')';
-										
+
 									}
 								}
-								
+
 								echo !empty($TData2[$code]) ? '<a href="'.dol_buildpath('/comm/action/index.php',1).'?action=show_month&year='.date('Y', strtotime($date_deb)).'&month='.date('m', strtotime($date_deb)).'&day=0&usertodo='.$fk_user.'&actioncode='.$code.'">'.$aff_data.'</a>' : '';
 								?>
 								</td>
-							
+
 							<?php } ?>
 							<td class="soc"><?php echo (int)$TData2['soc_created'] ?></td>
 							<td class="propal" align="right"><?php echo (int)$TData2['propal']['validated'].img_help(1,$TData2['propal']['validated_refs']); ?></td>
 							<td class="propal" align="right"><?php echo price($TData2['propal']['amount_validated']) ?></td>
-							<td class="taux" align="right"><?php 
+							<td class="taux" align="right"><?php
 								if($TData2['propal']['signed'] + $TData2['propal']['notsigned']>0) {
-									echo round($TData2['propal']['signed'] / ($TData2['propal']['signed'] + $TData2['propal']['notsigned']) * 100).'% 
-									/ '.round($TData2['propal']['amount_signed'] / ($TData2['propal']['amount_signed'] + $TData2['propal']['amount_notsigned']) * 100).'%'; 
+									echo round($TData2['propal']['signed'] / ($TData2['propal']['signed'] + $TData2['propal']['notsigned']) * 100).'%
+									/ '.round($TData2['propal']['amount_signed'] / ($TData2['propal']['amount_signed'] + $TData2['propal']['amount_notsigned']) * 100).'%';
 								}
 								else {
 									echo 'N/A';
 								}
-								
+
 							?></td>
 							<td class="propal_signed" align="right"><?php echo (int)$TData2['propal']['signed'].img_help(1,$TData2['propal']['signed_refs']);?></td>
 							<td class="propal_signed" align="right"><?php echo price($TData2['propal']['amount_signed']) ?></td>
 							<td class="propal_encours" align="right"><?php echo (int)$TData2['propal']['allvalidated'].img_help(1,$TData2['propal']['allvalidated_refs']); ?></td>
 							<td class="propal_encours" align="right"><?php echo price($TData2['propal']['amount_allvalidated']) ?></td>
 						</tr>
-					<?php	
+					<?php
 					}
 					?>
 
@@ -208,41 +208,44 @@
 
 <?php
 	}
-	
-	
-	
+
+
+
 	function _get_infos_events($date_deb,$date_fin){
 		global $db,$TCatAff;
-		
+
 		$TData = array();
-		
-		$sql = 'SELECT cac.code ,COUNT(ac.id) AS nbEvent, acr.fk_element AS user, cac.libelle AS libelle, GROUP_CONCAT(ac.fk_soc) as fk_socs 
+
+		$sql = 'SELECT acex.etape as code ,COUNT(ac.id) AS nbEvent, acr.fk_element AS user, cac.libelle AS libelle, GROUP_CONCAT(ac.fk_soc) as fk_socs
 					FROM '.MAIN_DB_PREFIX.'actioncomm ac ';
 		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.'actioncomm_resources acr ON (acr.fk_actioncomm = ac.id) ';
 		$sql .= ' INNER JOIN '.MAIN_DB_PREFIX.'c_actioncomm cac ON (cac.id = ac.fk_action) ';
-		//$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.' ';	
+		$sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'actioncomm_extrafields acex ON (acex.fk_object = ac.id) ';
+		//$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.' ';
 
 		$fk_usergroup = GETPOST('fk_usergroup','int');
 		if($fk_usergroup >0){
 			$sql .= 'INNER JOIN '.MAIN_DB_PREFIX.'usergroup_user ugu ON (acr.fk_element = ugu.fk_user) ';
-			
+
 		}
-		
-		
+
+
 		$sql .= ' WHERE (acr.element_type = "user") AND (ac.datep BETWEEN "'.$date_deb.' 00:00:00" AND "'.$date_fin.' 23:59:59") ';
 		if($fk_usergroup >0){
 			$sql.=" AND ugu.fk_usergroup=".	$fk_usergroup;
 		}
-		
-		$sql .= ' GROUP BY cac.code, acr.fk_element ';
+
+		$sql .= ' GROUP BY acex.etape, acr.fk_element ';
 		$sql .= ' ORDER BY acr.fk_element';
 		//echo $sql;
 		$resql = $db->query($sql);
 
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
+				if(empty($line->code)) continue;
+
 				$TCatAff[$line->code] = true;
-				
+
 				$TData[$line->user][$line->code] = array(
 					'user' => $line->user,
 					'nb' => $line->nbEvent,
@@ -256,20 +259,20 @@
 		}
 		//var_dump($TData);
 		return $TData;
-		
+
 	}
-	
+
 	function _get_nb_soc_created(&$TEvent, $date_deb,$date_fin){
 		global $db;
-		
+
 		$TData = array();
-		
+
 		$sql = 'SELECT COUNT(s.rowid) AS nb, s.fk_user_creat AS usrcreate FROM '.MAIN_DB_PREFIX.'societe s ';
 
 		$fk_usergroup = GETPOST('fk_usergroup','int');
                 if($fk_usergroup >0){
                         $sql .= 'INNER JOIN '.MAIN_DB_PREFIX.'usergroup_user ugu ON (s.fk_user_creat = ugu.fk_user) ';
-                        
+
                 }
 
 		$sql .= 'WHERE s.datec BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" AND s.fournisseur=0 ';
@@ -278,9 +281,9 @@
                 }
 
 		$sql .= ' GROUP BY s.fk_user_creat ';
-		
+
 		$resql = $db->query($sql);
-		
+
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
 				$TEvent[$line->usrcreate]['soc_created']=$line->nb;
@@ -291,24 +294,24 @@
 		}
 
 		return $TData;
-		
+
 	}
-	
+
 	function _get_nb_propal(&$TEvent, $date_deb,$date_fin){
 		global $db;
-		
+
 		$base_sql = 'SELECT p.total_ht as amount, p.fk_user_author, (
-				SELECT sc.fk_user FROM '.MAIN_DB_PREFIX.'societe_commerciaux sc WHERE sc.fk_soc = p.fk_soc ORDER BY sc.rowid DESC LIMIT 1 
+				SELECT sc.fk_user FROM '.MAIN_DB_PREFIX.'societe_commerciaux sc WHERE sc.fk_soc = p.fk_soc ORDER BY sc.rowid DESC LIMIT 1
 			) as fk_commercial
 			, (
 				SELECT ec.fk_socpeople FROM '.MAIN_DB_PREFIX.'element_contact ec WHERE ec.element_id = p.rowid AND ec.fk_c_type_contact = 31 ORDER BY ec.rowid DESC LIMIT 1
 			) as fk_socpeople, p.ref
-			FROM '.MAIN_DB_PREFIX.'propal p 
+			FROM '.MAIN_DB_PREFIX.'propal p
 				LEFT JOIN '.MAIN_DB_PREFIX.'propal_extrafields pex ON (pex.fk_object=p.rowid)
-				LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = p.fk_user_author) 
+				LEFT JOIN '.MAIN_DB_PREFIX.'user u ON (u.rowid = p.fk_user_author)
 				';
-				
-		
+
+
 		$fk_usergroup = GETPOST('fk_usergroup','int');
                 if($fk_usergroup >0){
                 	$base_sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'usergroup_user ugu ON (u.rowid = ugu.fk_user) ';
@@ -318,33 +321,33 @@
 		if($fk_usergroup >0){
 		 	$base_sql.=" AND ugu.fk_usergroup=". $fk_usergroup;
         }
-		
+
         $sql= $base_sql.' AND (p.datep BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
 			AND p.fk_statut > 0
 		GROUP BY p.rowid ';
-		
+
 		$resql = $db->query($sql);
-//echo $sql;		
+//echo $sql;
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
-				
+
 				$fk_user=empty($line->fk_socpeople) ? (empty($line->fk_commercial) ? (int)$line->fk_user_author : (int)$line->fk_commercial) : (int) $line->fk_socpeople;
-				
+
 				$TEvent[$fk_user]['propal']['validated']++;
 				$TEvent[$fk_user]['propal']['amount_validated']+=$line->amount;
 				$TEvent[$fk_user]['propal']['validated_ref'][]=$line->ref;
 				$TEvent[$fk_user]['propal']['validated_refs'] = implode(', ', $TEvent[$fk_user]['propal']['validated_ref']);
 			}
-			
+
 		}
-		
-		
+
+
 		$sql= $base_sql.' AND (pex.date_signature BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
 			AND p.fk_statut IN (2,4)
 		GROUP BY p.rowid ';
-		
+
 		$resql = $db->query($sql);
-		
+
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
 				$fk_user=empty($line->fk_socpeople) ? (empty($line->fk_commercial) ? (int)$line->fk_user_author : (int)$line->fk_commercial) : (int) $line->fk_socpeople;
@@ -353,22 +356,22 @@
 				$TEvent[$fk_user]['propal']['amount_signed']+=$line->amount;
 				$TEvent[$fk_user]['propal']['signed_ref'][]=$line->ref;
 				$TEvent[$fk_user]['propal']['signed_refs'] = implode(', ', $TEvent[$fk_user]['propal']['signed_ref']);
-				
+
 			}
 		}
 		else {
 			var_dump($db);
 		}
-		
+
 		$sql= $base_sql.' AND p.fk_statut IN (1)
 		GROUP BY p.rowid ';
-		
+
 		$resql = $db->query($sql);
-		
+
 		if ($resql){
 			while ($line = $db->fetch_object($resql)){
 				$fk_user=empty($line->fk_socpeople) ? (empty($line->fk_commercial) ? (int)$line->fk_user_author : (int)$line->fk_commercial) : (int) $line->fk_socpeople;
-				
+
 				$TEvent[$fk_user]['propal']['allvalidated']++;
 				$TEvent[$fk_user]['propal']['amount_allvalidated']+=$line->amount;
 				$TEvent[$fk_user]['propal']['allvalidated_ref'][]=$line->ref;
@@ -378,7 +381,7 @@
 		else {
 			var_dump($db);
 		}
-		
+
 		$sql= $base_sql.' AND (p.datep BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")
                         AND p.fk_statut IN (3)
                 GROUP BY p.rowid ';
@@ -388,7 +391,7 @@
                 if ($resql){
                         while ($line = $db->fetch_object($resql)){
                         		$fk_user=empty($line->fk_socpeople) ? (empty($line->fk_commercial) ? (int)$line->fk_user_author : (int)$line->fk_commercial) : (int) $line->fk_socpeople;
-                        		
+
                                 $TEvent[$fk_user]['propal']['notsigned']++;
                                 $TEvent[$fk_user]['propal']['amount_notsigned']+=$line->amount;
                                 $TEvent[$fk_user]['propal']['notsigned_ref'][]=$line->ref;
@@ -398,20 +401,20 @@
                 else {
                         var_dump($db);
                 }
-		
+
 	}
-	
+
 	function _print_filtres($date_deb,$date_fin){
 		global $db, $langs;
-		
+
 		$id=(int) GETPOST('id');
-		
+
 		$formCore = new TFormCore($_SERVER["PHP_SELF"],'formFiltres', 'POST');
 		_get_filtre($formCore,$date_deb,$date_fin);
 	}
-	
+
 	function _get_filtre(&$formCore,$date_deb,$date_fin){
-	    
+
 	    echo '<div class="tabBar">';
 	    echo '<table>';
 		echo '<tr>';
@@ -422,55 +425,49 @@
 		echo '<td>Date de fin : </td>';
 		echo '<td>'.$formCore->calendrier('', 'date_fin',strtotime($date_fin)).'</td>';
 		echo '</tr>';
-	
+
 		global $db;
 		$form=new Form($db);
 		echo '<tr>';
 		echo '<td>Groupe : </td>';
 		echo '<td>'.$form->select_dolgroups(GETPOST('fk_usergroup'), 'fk_usergroup',1).'</td>';
 		echo '</tr>';
-		
+
 		echo '<tr><td colspan="2" align="center">'.$formCore->btsubmit('Valider', '').'</td></tr>';
 	    echo '</table>';
-	    
+
 	    echo '</div>';
 	}
-	
-	
+
+
 	function regroup_data($date_deb,$date_fin){
-		
+
 		$TData = array();
-		
+
 		$TEvent = _get_infos_events($date_deb,$date_fin);
-		
+
 		_get_nb_soc_created($TEvent, $date_deb,$date_fin);
 		_get_nb_propal($TEvent, $date_deb,$date_fin);
-		
+
 		return $TEvent;
 	}
-	
+
 	function _categ(){
 		global $db,$langs;
-		
-		$extrafield = new Extrafield($db);
-		$extrafield->fetch(
-		$TData = array();
-		$sql = 'SELECT id,code, libelle AS libelle FROM '.MAIN_DB_PREFIX.'c_actioncomm WHERE active=1 ';
-		$sql .= 'ORDER BY libelle';
-		
-		$resql = $db->query($sql);
 
-		if ($resql){
-			while ($line = $db->fetch_object($resql)){
-				
-				$label=$langs->trans('Action'.$line->code);
-				if(empty($label) || $label == 'Action'.$line->code)$label = $line->libelle;
-				
-				$TData[$line->code] = $label;
-			}
+		$TData = array();
+		$sql="SELECT param FROM ".MAIN_DB_PREFIX."extrafields WHERE name='etape'";
+		$res = $db->query($sql);
+		$obj = $db->fetch_object($res);
+
+		$TParam = unserialize($obj->param);
+		foreach($TParam['options'] as $code=>$label) {
+
+			$TData[$code] = $label;
+
 		}
-		
+
 		natcasesort($TData);
-		
+
 		return $TData;
 	}
