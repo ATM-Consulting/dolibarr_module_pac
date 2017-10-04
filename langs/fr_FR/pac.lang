@@ -18,6 +18,7 @@ propalCommercial=Propositions par commercial
 
 #Evenements associés au commercial par type 
 events_salesman=Evenements par commercial
+events_salesman_step=Evenements/commercial/étape
 
 #PROPALES TRANSFORMEES PAR COMMERCIAL
 PropalTransformed=Propales transformées par commercial

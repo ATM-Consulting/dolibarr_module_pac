@@ -261,6 +261,19 @@ class modPac extends DolibarrModules
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
 		 
+                 $this->menu[$r]=array( 'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',                // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_lef$
+                                                                        'type'=>'left',                                 // This is a Left menu entry
+                                                                        'titre'=>$langs->transnoentitiesnoconv('events_salesman_step'),
+                                                                        'mainmenu'=>'',
+                                                                        'leftmenu'=>'',
+                                                                        'url'=>'/pac/events_salesman_step1.php',
+                                                                        'langs'=>'pac@pac',             // Lang file to use (without .lang) by module. File mus$
+                                                                        'position'=>130,
+                                                                        'enabled'=>'$conf->pac->enabled',  // Define condition to show or hide menu entry. Use $
+                                                                        'perms'=>'1',                                   // Use 'perms'=>'$user->rights->pac->le$
+                                                                        'target'=>'',
+                                                                        'user'=>2);                                             // 0=Menu for internal users, 1$
+                 $r++;
 		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
 									'titre'=>$langs->transnoentitiesnoconv('PropalTransformed'),

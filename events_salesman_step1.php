@@ -187,15 +187,15 @@ div.rotate90 {
 									}
 								}
 
-								//echo !empty($TData2) ? '<a href="'.dol_buildpath('/comm/action/index.php',1).'?action=show_month&year='.date('Y', strtotime($date_deb)).'&month='.date('m', strtotime($date_deb)).'&day=0&usertodo='.$fk_user.'&actioncode='.$code.'">'.$aff_data.'</a>' : '';
-								echo $aff_data;
+								echo !empty($TData1) ? '<a href="'.dol_buildpath('/pac/listactions.php',1).'?action=show_month&year='.date('Y', strtotime($date_deb)).'&month='.date('m', strtotime($date_deb)).'&day=0&usertodo='.$fk_user.'&step='.$code.'">'.$aff_data.'</a>' : '';
+//								echo $aff_data;
 									echo '</td>';
 								}
 								
 
 							} ?>
 							<td class="soc"><?php echo (int)$TData1['@']['soc_created'] ?></td>
-							<td class="propal" align="right"><?php echo (int)$TData1['@']['propal']['validated'].img_help(1,$TData2['propal']['validated_refs']); ?></td>
+							<td class="propal" align="right"><?php echo (int)$TData1['@']['propal']['validated'].img_help(1,$TData1['@']['propal']['validated_refs']); ?></td>
 							<td class="propal" align="right"><?php echo price($TData1['@']['propal']['amount_validated']) ?></td>
 							<td class="taux" align="right"><?php
 							if($TData1['@']['propal']['signed'] + $TData1['@']['propal']['notsigned']>0) {
