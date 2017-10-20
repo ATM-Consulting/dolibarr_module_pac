@@ -244,12 +244,12 @@ div.rotate90 {
 		}
 
 
-		$sql .= ' WHERE (acr.element_type = "user") AND (ac.datep BETWEEN "'.$date_deb.' 00:00:00" AND "'.$date_fin.' 23:59:59") ';
+		$sql .= ' WHERE (acr.element_type = "user") AND (ac.datep BETWEEN "'.$date_deb.' 00:00:00" AND "'.$date_fin.' 23:59:59") AND percent=100 ';
 		if($fk_usergroup >0){
 			$sql.=" AND ugu.fk_usergroup=".	$fk_usergroup;
 		}
 
-		$sql .= ' GROUP BY cac.code, acex.etape, acr.fk_element ';
+		$sql .= ' GROUP BY acex.etape, acr.fk_element ';
 		$sql .= ' ORDER BY acr.fk_element';
 		//echo $sql;
 		$resql = $db->query($sql);
