@@ -120,7 +120,9 @@ div.rotate90 {
 				<thead>
 					<tr style="text-align:left;" class="liste_titre nodrag nodrop">
 						<th class="liste_titre" rowspan="2">Utilisateur</th>
-						<?php foreach ($TCatAff as $code=>$dummy){ ?>
+						<?php
+ksort($TCatAff);
+						 foreach ($TCatAff as $code=>$dummy){ ?>
 							<th class="liste_titre" ><div class="rotate90"><?php echo $TData_step[$code] ?></div></th>
 						<?php } ?>
 						<th class="liste_titre soc" rowspan="2"><div class="rotate90">Nombre de tiers crées</div></th>
@@ -487,7 +489,7 @@ div.rotate90 {
 		}
 
 		natcasesort($TData);
-
+//var_dump($TData);exit;
 		return $TData;
 	}
 	function _etape(){
@@ -506,6 +508,6 @@ div.rotate90 {
 		}
 
 		natcasesort($TData);
-
+//var_dump($TData);exit;
 		return $TData;
 	}
