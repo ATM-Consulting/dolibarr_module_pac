@@ -33,6 +33,7 @@ NbPropal=Nb. Propale signées/facturée
 NbCustomer=Nb. Client
 
 # CommercialFollowUp
+PAC_COMERCIAL_FOLLOWUP_PARENT_CAT=Catégorie parente utiliser pour déterminer les secteurs des tiers pour le rapport de "Suivi commercial et réalisation des objectifs"
 CommercialFollowUp=Suivi commercial et réalisation des objectifs
 Realized=Réalisées
 Signed=Signées

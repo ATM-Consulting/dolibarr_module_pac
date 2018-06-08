@@ -33,10 +33,13 @@
 	
 	
 	function _get_propales($iduser, $date_deb, $date_fin){
-	    global $db,$sortorder,$sortfield;
+	    global $db,$sortorder,$sortfield, $conf;
 		$sortfield = GETPOST('sortfield');
 		$sortorder = GETPOST('sortorder');
 		$TData = array();
+		
+		
+		$catLists = getCategoryChild($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT);
 		
 		$type= GETPOST('type');
 		if(empty($type))$type='signed';
@@ -52,11 +55,7 @@
 		
 		$date_field ='COALESCE(NULLIF(p.date_cloture,\'\'), p.date_valid)'; //'date_valid'
 		
-		
-		
-		
-		// TODO: utiliser la date de signature
-		
+
 		$sql = 'SELECT SUM(p.total_ht) total_ht, count(p.rowid) totalcount, p.fk_statut, cs.fk_categorie, UNIX_TIMESTAMP('.$date_field.') time, MONTH('.$date_field.') month, YEAR('.$date_field.') year
 			FROM '.MAIN_DB_PREFIX.'propal p 
             LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
@@ -67,28 +66,55 @@
 		if($iduser>0) $sql.= ' AND sc.fk_user = '.$iduser; 
 		$sql.= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") 
 			AND p.fk_statut='.$statut.' ';
-			
-		$sql.= ' GROUP BY  cs.fk_categorie, p.fk_statut, MONTH('.$date_field.'), YEAR('.$date_field.') ';
+		
+		$sql.='';
+		
+		if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT) && !empty($catLists)){
+		    $sqlCatFilter=' AND cs.fk_categorie IN ('.implode(',', $catLists).') ';
+		}
+		else{
+		    $sqlCatFilter=' AND cs.fk_categorie = 0 ';
+		} 
+		
+		$sqlGroup = ' GROUP BY  cs.fk_categorie, p.fk_statut, MONTH('.$date_field.'), YEAR('.$date_field.') ';
 		
 		if (!empty($sortfield) && !empty($sortorder)){
-		    $sql .= 'ORDER BY '.$date_field.' ASC';
+		    $sqlOrder .= 'ORDER BY '.$date_field.' ASC';
 		}
-
-		$resql = $db->query($sql);
-		//print $sql;
-		if ($resql){
-			while ($line = $db->fetch_object($resql)){
-				// dispatch results
-			    
-			    if(empty($line->fk_categorie)){ $line->fk_categorie = 0; } // in NULL case
-			    
-			    $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$line->fk_statut] = $line ; // les résultats brute
-			    
-			    $TData['dates'][$line->year.'-'.$line->month] = new stdClass(); $line->time ; // liste des mois
-			    $TData['dates'][$line->year.'-'.$line->month]->time=$line->time;
-			}
+		
+		// prepare with parent cat
+		$sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
+		prepareTDataFromSql ($sqlCatIn, $TData);
+		
+		// cherche et prepare les tiers hors catégorie
+		if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT)){
+		    $sqlCatFilter=' AND ISNULL(cs.fk_categorie) ';
+		    $sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
+		    prepareTDataFromSql ($sqlCatIn, $TData);
 		}
+		
+		
 		return $TData;
+	}
+	
+	
+	
+	function prepareTDataFromSql ($sql, &$TData){
+	    global $db;
+	    $resql = $db->query($sql);
+	    //print $sql;
+	    if ($resql){
+	        while ($line = $db->fetch_object($resql)){
+	            // dispatch results
+	            
+	            if(empty($line->fk_categorie)){ $line->fk_categorie = 0; } // in NULL case
+	            
+	            $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$line->fk_statut] = $line ; // les résultats brute
+	            
+	            $TData['dates'][$line->year.'-'.$line->month] = new stdClass(); $line->time ; // liste des mois
+	            $TData['dates'][$line->year.'-'.$line->month]->time=$line->time;
+	        }
+	    }
 	}
 	
 	function _print_filtres(){
@@ -441,3 +467,31 @@
 	}
 	
 	
+	function getCategoryChild($cat,$deep=0)
+	{
+	    global $db;
+	    
+	    dol_include_once('categories/class/categorie.class.php');
+	    
+	    $Tlist = array();
+	    
+	    $category = new Categorie($db);
+	    $res = $category->fetch($cat);
+	    
+	    $Tfilles = $category->get_filles();
+	    if(!empty($Tfilles) && $Tfilles>0)
+	    {
+	        foreach ($Tfilles as &$fille)
+	        {
+	            $Tlist[] = $fille->id;
+	            
+	            $Tchild = getCategoryChild($fille->id,$deep++);
+	            if(!empty($Tchild)){
+	                $Tlist = array_merge($Tlist,$Tchild);
+	            }
+	        }
+	    }
+	    
+	    return $Tlist;
+	    
+	}
