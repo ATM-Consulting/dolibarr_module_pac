@@ -31,3 +31,11 @@ CAByCateg=CA par catégorie
 
 NbPropal=Nb. Propale signées/facturée
 NbCustomer=Nb. Client
+
+# CommercialFollowUp
+CommercialFollowUp=Suivi commercial et réalisation des objectifs
+Realized=Réalisées
+Signed=Signées
+TransformationRatio=Taux de transformation
+withoutCategory=Hors secteurs surveillé
+Sector=Secteur
