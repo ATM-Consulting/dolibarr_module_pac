@@ -46,11 +46,12 @@ div.period {
 	padding:5px 5px;
 }
 
-.noborder > tbody > tr:nth-child(odd):not(:last-child) td.border-left-light, .liste > tbody > tr:nth-child(odd):not(:last-child) td.border-left-light, .border-left-light{
-	border-left: 1px solid #666;
+
+.border-left-light{
+	border-left: 1px solid #666 !important;
 }
-.noborder > tbody > tr:nth-child(odd):not(:last-child) td.border-left-heavy, .liste > tbody > tr:nth-child(odd):not(:last-child) td.border-left-heavy, .border-left-heavy {
-	border-left: 2px solid #000;
+.border-left-heavy {
+	border-left: 2px solid #000 !important;
 }
 
 .cellMinWidth{
