@@ -41,7 +41,7 @@
 		
 		$catLists = getCategoryChild($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT);
 		
-		$type= GETPOST('type');
+		/*$type= GETPOST('type');
 		if(empty($type))$type='signed';
 		 
 		if($type === 'signed' ){
@@ -51,21 +51,32 @@
 		else{
 			$date_field = 'date_valid';
 			$statut = 1;
-		}
+		}*/
 		
-		$date_field ='COALESCE(NULLIF(p.date_cloture,\'\'), p.date_valid)'; //'date_valid'
+		$date_field ='COALESCE(NULLIF(p.date_cloture,\'\'), p.datep)'; //'date_valid'
 		
+		// A mon avis il faut 3 requête avec un UNION :
+		// - Toutes les propales (fk_statut > 0) sur datep
+		// - Toutes les propales signée (fk_statut IN (2,4)) sur date_cloture (ou date_signature à revoir)
+		// - Toutes les propales non signée (fk_statut = 3) sur date_cloture (ou date_signature à revoir)
+		// Pour l'instant le montant réalisé se met dans le mois de cloture si la propale est close.
 
-		$sql = 'SELECT SUM(p.total_ht) total_ht, count(p.rowid) totalcount, p.fk_statut, cs.fk_categorie, UNIX_TIMESTAMP('.$date_field.') time, MONTH('.$date_field.') month, YEAR('.$date_field.') year
+		$sql = 'SELECT
+					SUM(p.total_ht) total_ht,
+					count(p.rowid) totalcount,
+					p.fk_statut,
+					cs.fk_categorie,
+					UNIX_TIMESTAMP('.$date_field.') time,
+					MONTH('.$date_field.') month,
+					YEAR('.$date_field.') year
 			FROM '.MAIN_DB_PREFIX.'propal p 
-            LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
-            LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)
-            
+			LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
+			LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)
 			WHERE 1 ';
 			
 		if($iduser>0) $sql.= ' AND sc.fk_user = '.$iduser; 
 		$sql.= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") 
-			AND p.fk_statut='.$statut.' ';
+				AND p.fk_statut > 0 ';
 		
 		$sql.='';
 		
@@ -76,7 +87,7 @@
 		    $sqlCatFilter=' AND cs.fk_categorie = 0 ';
 		} 
 		
-		$sqlGroup = ' GROUP BY  cs.fk_categorie, p.fk_statut, MONTH('.$date_field.'), YEAR('.$date_field.') ';
+		$sqlGroup = ' GROUP BY  cs.fk_categorie, p.fk_statut, UNIX_TIMESTAMP('.$date_field.'), MONTH('.$date_field.'), YEAR('.$date_field.') ';
 		
 		if (!empty($sortfield) && !empty($sortorder)){
 		    $sqlOrder .= 'ORDER BY '.$date_field.' ASC';
@@ -109,7 +120,7 @@
 	            
 	            if(empty($line->fk_categorie)){ $line->fk_categorie = 0; } // in NULL case
 	            
-	            $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$line->fk_statut] = $line ; // les résultats brute
+	            $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$line->time] = $line ; // les résultats brute
 	            
 	            $TData['dates'][$line->year.'-'.$line->month] = new stdClass(); $line->time ; // liste des mois
 	            $TData['dates'][$line->year.'-'.$line->month]->time=$line->time;
@@ -179,11 +190,10 @@
 		
 			if(empty($TData)) return ;
 			
+			// INIT DATE INFOS TOTALS
+			prepareTData($TData);
+			
 			print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">';
-		
-			
-
-			
 
 			// TABLE HEAD
 			print '<thead>';
@@ -213,10 +223,6 @@
 			
 			print '<tbody>';
 			
-			// INIT DATE INFOS TOTALS
-			prepareTData($TData);
-			
-			
 			
 			foreach ($TData['data'] as $fk_categorie => $data ){
 			    
@@ -235,6 +241,8 @@
 			    $sector_totalSigned = 0;
 			    $sector_nbSigned =0;
 			    
+			    $sector_totalNotSigned = 0;
+			    $sector_nbNotSigned =0;
 			    
 			    foreach ($TData['dates'] as $dateKey => $dateInfos ){
 			        
@@ -242,15 +250,18 @@
 			        $nbRealised = 0;
 			        
 			        $totalSigned = 0;
-			        $nbSigned =0;
+			        $nbSigned = 0;
 			        
+			        $totalNotSigned = 0;
+			        $nbNotSigned = 0;
+					
 			        $transormationRatio = 0;
 			        
 			        
 			        // AFFECTATION DES TOTAUX AUX DATES
 			        if(!empty($data[$dateKey]))
 			        {
-			            foreach ($data[$dateKey] as $statut => $object)
+			            foreach ($data[$dateKey] as $time => $object)
 			            {
 			                
 			                if($object->fk_statut == Propal::STATUS_DRAFT){
@@ -270,6 +281,9 @@
 			                elseif($object->fk_statut == Propal::STATUS_NOTSIGNED){
 			                    $totalRealised += $object->total_ht;
 			                    $nbRealised += $object->totalcount;
+								
+			                    $totalNotSigned += $object->total_ht;
+			                    $nbNotSigned += $object->totalcount;
 			                }
 			                elseif($object->fk_statut == Propal::STATUS_BILLED){
 			                    $totalRealised += $object->total_ht;
@@ -280,14 +294,8 @@
 			                }
 			            }
 			        }
-			        
-			        if(!empty($nbSigned))
-			        {
-			            $transormationRatio = $nbSigned / $nbRealised * 100;
-			            $transormationRatio = round($transormationRatio,2);
-			        }
 			       
-			        $transformationRatio = calcRatio($nbSigned, $nbRealised);
+			        $transformationRatio = calcRatio($nbSigned, $nbSigned + $nbNotSigned);
 			        
 			        print '<td class="border-left-heavy"  style="text-align:right;" >'.price($totalRealised).'</td>';
 			        print '<td class="border-left-light"  style="text-align:right;" >'.price($totalSigned).'</td>';
@@ -302,17 +310,23 @@
 			        $sector_totalSigned += $totalSigned;
 			        $sector_nbSigned += $nbSigned;
 			        
+			        $sector_totalNotSigned += $totalNotSigned;
+			        $sector_nbNotSigned += $nbNotSigned;
+			        
 			        // Mise à jour des totaux du bloc date
 			        $TData['dates'][$dateKey]->totalRealised += $totalRealised;
 			        $TData['dates'][$dateKey]->nbRealised += $nbRealised;
 			        
 			        $TData['dates'][$dateKey]->totalSigned += $totalSigned;
 			        $TData['dates'][$dateKey]->nbSigned += $nbSigned;
+			        
+			        $TData['dates'][$dateKey]->totalNotSigned += $totalNotSigned;
+			        $TData['dates'][$dateKey]->nbNotSigned += $nbNotSigned;
 			       
 			    }
 			    
 			    
-			    $sector_transformationRatio = calcRatio($sector_nbSigned, $sector_nbRealised);
+			    $sector_transformationRatio = calcRatio($sector_nbSigned, $sector_nbSigned + $sector_nbNotSigned);
 			    
 			    
 			    print '<td class="border-left-heavy"  style="text-align:right;" >'.price($sector_totalRealised).'</td>';
@@ -334,13 +348,15 @@
 			
 			
 			$global_totalRealised=0;
-			$global_totalSigned=0;
 			$global_nbRealised=0;
+			$global_totalSigned=0;
 			$global_nbSigned=0;
+			$global_totalNotSigned=0;
+			$global_nbNotSigned=0;
 			
 			foreach ($TData['dates'] as  $dateKey => $dateInfos  ){
 			    
-			    $dateInfos->transormationRatio = calcRatio($dateInfos->nbSigned, $dateInfos->nbRealised);
+			    $dateInfos->transormationRatio = calcRatio($dateInfos->nbSigned, $dateInfos->nbSigned + $dateInfos->nbNotSigned);
 			    
 			    print '<th class="border-left-heavy"  style="text-align:right;" >'.price($dateInfos->totalRealised).'</th>';
 			    print '<th class="border-left-light"  style="text-align:right;" >'.price($dateInfos->totalSigned).'</th>';
@@ -350,10 +366,12 @@
 			    $global_nbRealised += $dateInfos->nbRealised;
 			    $global_totalSigned += $dateInfos->totalSigned;
 			    $global_nbSigned += $dateInfos->nbSigned;
+			    $global_totalNotSigned += $dateInfos->totalNotSigned;
+			    $global_nbNotSigned += $dateInfos->nbNotSigned;
 			    
 			}
 			
-			$global_transformationRatio = calcRatio($global_nbSigned, $global_nbRealised);
+			$global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 			
 			
 			
@@ -368,9 +386,11 @@
 			print '<th style="text-align:right;" >'.$langs->trans('TotalCumule').'</th>';
 			
 			$global_totalRealised=0;
-			$global_totalSigned=0;
 			$global_nbRealised=0;
+			$global_totalSigned=0;
 			$global_nbSigned=0;
+			$global_totalNotSigned=0;
+			$global_nbNotSigned=0;
 			
 			foreach ($TData['dates'] as  $dateKey => $dateInfos  ){
 			    
@@ -379,7 +399,9 @@
 			    $global_nbRealised += $dateInfos->nbRealised;
 			    $global_totalSigned += $dateInfos->totalSigned;
 			    $global_nbSigned += $dateInfos->nbSigned;
-			    $global_transformationRatio = calcRatio($global_nbSigned, $global_nbRealised);
+			    $global_totalNotSigned += $dateInfos->totalNotSigned;
+			    $global_nbNotSigned += $dateInfos->nbNotSigned;
+			    $global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_totalNotSigned);
 			    
 			    
 			    print '<th class="border-left-heavy"  style="text-align:right;" >'.price($global_totalRealised).'</th>';
