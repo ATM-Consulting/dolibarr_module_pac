@@ -238,13 +238,15 @@
 			                
 			            }
 			        }
-			       
+			        
+			        $ratioDetails = $nbSigned.' '.$langs->trans('Signed').' / ('.  $nbSigned .' '.$langs->trans('Signed').' + '. $nbNotSigned .' '.$langs->trans('NotSigned').')';
+			        
 			        $transformationRatio = calcRatio($nbSigned, $nbSigned + $nbNotSigned);
 			        
 			        
 			        print '<td class="border-left-heavy totalRealised"  style="text-align:right;" >'.price($totalRealised).'</td>';
 			        print '<td class="border-left-light totalSigned"  style="text-align:right;" >'.price($totalSigned).'</td>';
-			        print '<td class="border-left-light transformationRatio"  style="text-align:right;" >'.price($transformationRatio).'%</td>';
+			        print '<td class="border-left-light transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(price($transformationRatio).'%', $ratioDetails, 3).'</td>';
 			        
 			        
 			        
