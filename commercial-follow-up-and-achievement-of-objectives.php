@@ -41,77 +41,33 @@
 		
 		$catLists = getCategoryChild($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT);
 		
-		/*$type= GETPOST('type');
-		if(empty($type))$type='signed';
-		 
-		if($type === 'signed' ){
-			$date_field ='date_cloture';
-			$statut = 2;
-		}
-		else{
-			$date_field = 'date_valid';
-			$statut = 1;
-		}*/
-		
-		$date_field ='COALESCE(NULLIF(p.date_cloture,\'\'), p.datep)'; //'date_valid'
+
 		
 		// A mon avis il faut 3 requête avec un UNION :
-		// - Toutes les propales (fk_statut > 0) sur datep
-		// - Toutes les propales signée (fk_statut IN (2,4)) sur date_cloture (ou date_signature à revoir)
-		// - Toutes les propales non signée (fk_statut = 3) sur date_cloture (ou date_signature à revoir)
 		// Pour l'instant le montant réalisé se met dans le mois de cloture si la propale est close.
-
-		$sql = 'SELECT
-					SUM(p.total_ht) total_ht,
-					count(p.rowid) totalcount,
-					p.fk_statut,
-					cs.fk_categorie,
-					UNIX_TIMESTAMP('.$date_field.') time,
-					MONTH('.$date_field.') month,
-					YEAR('.$date_field.') year
-			FROM '.MAIN_DB_PREFIX.'propal p 
-			LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
-			LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)
-			WHERE 1 ';
-			
-		if($iduser>0) $sql.= ' AND sc.fk_user = '.$iduser; 
-		$sql.= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") 
-				AND p.fk_statut > 0 ';
 		
-		$sql.='';
+	    // - Toutes les propales (fk_statut > 0) sur datep
+	    _get_propales_query($TData, $catLists, $iduser, $date_deb, $date_fin, 'all');
+	    
 		
-		if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT) && !empty($catLists)){
-		    $sqlCatFilter=' AND cs.fk_categorie IN ('.implode(',', $catLists).') ';
-		}
-		else{
-		    $sqlCatFilter=' AND cs.fk_categorie = 0 ';
-		} 
+		// - Toutes les propales signée (fk_statut IN (2,4)) sur date_cloture (ou date_signature à revoir)
+		_get_propales_query($TData, $catLists, $iduser, $date_deb, $date_fin, 'allSigned');
+		    
+		    
+		// - Toutes les propales non signée (fk_statut = 3) sur date_cloture (ou date_signature à revoir)
+        _get_propales_query($TData, $catLists, $iduser, $date_deb, $date_fin, 'allNotSigned');
+		   
 		
-		$sqlGroup = ' GROUP BY  cs.fk_categorie, p.fk_statut, UNIX_TIMESTAMP('.$date_field.'), MONTH('.$date_field.'), YEAR('.$date_field.') ';
-		
-		if (!empty($sortfield) && !empty($sortorder)){
-		    $sqlOrder .= 'ORDER BY '.$date_field.' ASC';
-		}
-		
-		// prepare with parent cat
-		$sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
-		prepareTDataFromSql ($sqlCatIn, $TData);
-		
-		// cherche et prepare les tiers hors catégorie
-		if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT)){
-		    $sqlCatFilter=' AND ISNULL(cs.fk_categorie) ';
-		    $sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
-		    prepareTDataFromSql ($sqlCatIn, $TData);
-		}
-		
+       
 		
 		return $TData;
 	}
 	
 	
 	
-	function prepareTDataFromSql ($sql, &$TData){
+	function prepareTDataFromSql ($sql, &$TData, $type){
 	    global $db;
+	    
 	    $resql = $db->query($sql);
 	    //print $sql;
 	    if ($resql){
@@ -120,10 +76,12 @@
 	            
 	            if(empty($line->fk_categorie)){ $line->fk_categorie = 0; } // in NULL case
 	            
-	            $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$line->time] = $line ; // les résultats brute
+	            $line->time = strtotime($line->year.'-'.$line->month.'-01 00:00:00'); // utilisé plus tard juste poour un affichage propre des dates
 	            
-	            $TData['dates'][$line->year.'-'.$line->month] = new stdClass(); $line->time ; // liste des mois
-	            $TData['dates'][$line->year.'-'.$line->month]->time=$line->time;
+	            $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$type] = $line ; // les résultats brute
+	            $TData['dates'][$line->year.'-'.$line->month] = new stdClass();// liste des mois
+	            $TData['dates'][$line->year.'-'.$line->month]->time = $line->time; // utilisé plus tard juste poour un affichage propre des dates
+	            
 	        }
 	    }
 	}
@@ -261,37 +219,23 @@
 			        // AFFECTATION DES TOTAUX AUX DATES
 			        if(!empty($data[$dateKey]))
 			        {
-			            foreach ($data[$dateKey] as $time => $object)
+			            foreach ($data[$dateKey] as $type => $object)
 			            {
-			                
-			                if($object->fk_statut == Propal::STATUS_DRAFT){
+			                if($type == 'all'){
 			                    // nothing
-			                }
-			                elseif($object->fk_statut == Propal::STATUS_VALIDATED){
 			                    $totalRealised += $object->total_ht;
 			                    $nbRealised += $object->totalcount;
 			                }
-			                elseif($object->fk_statut == Propal::STATUS_SIGNED){
-			                    $totalRealised += $object->total_ht;
-			                    $nbRealised += $object->totalcount;
-			                    
+			                elseif($type == 'allSigned'){
 			                    $totalSigned += $object->total_ht;
 			                    $nbSigned += $object->totalcount;
 			                }
-			                elseif($object->fk_statut == Propal::STATUS_NOTSIGNED){
-			                    $totalRealised += $object->total_ht;
-			                    $nbRealised += $object->totalcount;
+			                elseif($type == 'allNotSigned'){
 								
 			                    $totalNotSigned += $object->total_ht;
 			                    $nbNotSigned += $object->totalcount;
 			                }
-			                elseif($object->fk_statut == Propal::STATUS_BILLED){
-			                    $totalRealised += $object->total_ht;
-			                    $nbRealised += $object->totalcount;
-			                    
-			                    $totalSigned += $object->total_ht;
-			                    $nbSigned += $object->totalcount;
-			                }
+			                
 			            }
 			        }
 			       
@@ -431,7 +375,6 @@
 	        $transformationRatio = $nbSigned / $nbRealised * 100;
 	        $transformationRatio = round($transformationRatio,2);
 	    }
-	    
 	    return $transformationRatio;
 	}
 	
@@ -516,4 +459,79 @@
 	    
 	    return $Tlist;
 	    
+	}
+	
+	
+	function _get_propales_query(&$TData, $catLists, $iduser, $date_deb, $date_fin, $type = 'all'){
+	    global $db, $conf;
+	    
+	    
+	    // A mon avis il faut 3 requête avec un UNION :
+	    if($type=='all'){
+	        // - Toutes les propales (fk_statut > 0) sur datep
+	        $date_field ='p.datep';
+	        $sqlStatus = ' AND p.fk_statut > 0 ';
+	        
+	    }
+	    elseif($type=='allSigned'){
+	        // - Toutes les propales signée (fk_statut IN (2,4)) sur date_cloture (ou date_signature à revoir)
+	        $date_field ='p.date_cloture';
+	        $sqlStatus = ' AND p.fk_statut IN (2,4) ';
+	        
+	    }
+	    elseif($type=='allNotSigned'){
+	        // - Toutes les propales non signée (fk_statut = 3) sur date_cloture (ou date_signature à revoir)
+	        $date_field ='p.date_cloture';
+	        $sqlStatus = ' AND p.fk_statut = 3 ';
+	    }
+	    else 
+	    {
+	        return false;
+	    }
+	    
+	    // Pour l'instant le montant réalisé se met dans le mois de cloture si la propale est close.
+	    
+	    
+	    $sql = 'SELECT
+					SUM(p.total_ht) total_ht,
+					count(p.rowid) totalcount,
+					p.fk_statut,
+					cs.fk_categorie,
+					MONTH('.$date_field.') month,
+					YEAR('.$date_field.') year
+			FROM '.MAIN_DB_PREFIX.'propal p
+			LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
+			LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)
+			WHERE 1 ';
+	    
+	    if($iduser>0) $sql.= ' AND sc.fk_user = '.$iduser;
+	    $sql.= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") ';
+	    
+	    $sql.= $sqlStatus;
+	    
+	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT) && !empty($catLists)){
+	        $sqlCatFilter=' AND cs.fk_categorie IN ('.implode(',', $catLists).') ';
+	    }
+	    else{
+	        $sqlCatFilter=' AND cs.fk_categorie = 0 ';
+	    }
+	    
+	    $sqlGroup = ' GROUP BY  cs.fk_categorie, p.fk_statut,  MONTH('.$date_field.'), YEAR('.$date_field.') ';
+	    $sqlOrder .= 'ORDER BY '.$date_field.' ASC';
+	    
+	    
+	    // prepare with parent cat
+	    $sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
+	    prepareTDataFromSql ($sqlCatIn, $TData, $type);
+	    
+	    // cherche et prepare les tiers hors catégorie
+	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT)){
+	        $sqlCatFilter=' AND ISNULL(cs.fk_categorie) ';
+	        $sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
+	        prepareTDataFromSql ($sqlCatIn, $TData, $type);
+	    }
+	    
+	    
+	    
+	    return $TData;
 	}
