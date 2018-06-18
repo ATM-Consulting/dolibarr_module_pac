@@ -424,6 +424,11 @@
 	
 	function calcRatio($nbSigned, $nbRealised){
 	    $transformationRatio=0;
+	    
+	    if(empty($nbRealised)){
+	        return 0; // prevent division by 0
+	    }
+	    
 	    if(!empty($nbSigned))
 	    {
 	        $transformationRatio = $nbSigned / $nbRealised * 100;
