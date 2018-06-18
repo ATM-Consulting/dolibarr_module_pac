@@ -76,7 +76,7 @@
 	            
 	            if(empty($line->fk_categorie)){ $line->fk_categorie = 0; } // in NULL case
 	            
-	            if($forceCatId === false){ $line->fk_categorie = 0; } // in forceCatId case
+	            if($forceCatId !== false){ $line->fk_categorie = $forceCatId; } // in forceCatId case
 	            
 	            $line->time = strtotime($line->year.'-'.$line->month.'-01 00:00:00'); // utilisé plus tard juste poour un affichage propre des dates
 	            
