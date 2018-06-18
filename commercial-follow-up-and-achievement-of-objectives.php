@@ -134,7 +134,6 @@
 	    global $db, $langs,$sortorder,$sortfield,$form;
 		
 		$idUser=GETPOST('userid');
-		
 		$date_d=str_replace('/', '-', GETPOST('date_deb'));
 		$date_f=str_replace('/', '-', GETPOST('date_fin'));
 		$date_deb=date('Y-m-01', strtotime($date_d));
@@ -142,7 +141,12 @@
 			
 		if(GETPOST('date_deb')=='')$date_deb=date('Y-m-01' , strtotime(date('Y-m-01'))-(60*60*24*30));
 		if(GETPOST('date_fin')=='')$date_fin=date('Y-m-t');
-		$param = '&userid='.$idUser.'&date_deb='.$date_deb.'&date_fin='.$date_fins;
+		
+		
+		/*$dateSignaturesearchField = 'search_options_'.'date_signature' ;
+		$param = '&search_month='.date('m',strtotime($date_deb)).'&search_year='.date('Y',strtotime($date_deb)).$dateSignaturesearchField.'=';
+		$listLink = dol_buildpath('comm/propal/list.php', 2) . '?formfilteraction=list&action=list&sortfield=p.ref&sortorder=desc'.$param;*/
+		
 		
 			$TData = _get_propales($idUser, $date_deb, $date_fin);
 		
@@ -239,14 +243,20 @@
 			            }
 			        }
 			        
-			        $ratioDetails = $nbSigned.' '.$langs->trans('Signed').' / ('.  $nbSigned .' '.$langs->trans('Signed').' + '. $nbNotSigned .' '.$langs->trans('NotSigned').')';
+			        // taux de transformation montant
+			        $ratioDetails = $langs->trans('Amount').' : '.price($totalSigned).' '.$langs->trans('Signed').' / ('.  price($totalSigned) .' '.$langs->trans('Signed').' + '. price($totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			        $transformationRatio = calcRatio($totalSigned, $totalSigned + $totalNotSigned);
 			        
-			        $transformationRatio = calcRatio($nbSigned, $nbSigned + $nbNotSigned);
+			        // taux de transformation qty
+			        $ratioDetails .= '<br/>'.$langs->trans('Number').' : '.$nbSigned.' '.$langs->trans('Signed').' / ('.  $nbSigned .' '.$langs->trans('Signed').' + '. $nbNotSigned .' '.$langs->trans('NotSigned').')';
+			        $ratioDetails .= ' = '.calcRatio($nbSigned, $nbSigned + $nbNotSigned);
+			        //$transformationRatio = calcRatio($nbSigned, $nbSigned + $nbNotSigned);
 			        
-			        
-			        print '<td class="border-left-heavy totalRealised"  style="text-align:right;" >'.price($totalRealised).'</td>';
-			        print '<td class="border-left-light totalSigned"  style="text-align:right;" >'.price($totalSigned).'</td>';
+			        print '<td class="border-left-heavy totalRealised"  style="text-align:right;" >'.price($totalRealised).'</td>'; //<a target="_blank" href="'.$listLink.'" >'.price($totalRealised).'</a>
+			        print '<td class="border-left-light totalSigned"  style="text-align:right;" >'.price($totalSigned).'</td>'; // <a href="'.$listLink.'&propal_statut=2,3,4" >'.price($totalSigned).'</a>
 			        print '<td class="border-left-light transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(price($transformationRatio).'%', $ratioDetails, 3).'</td>';
+			        
+			        
 			        
 			        
 			        
@@ -273,9 +283,17 @@
 			    }
 			    
 			    
-			    $sector_transformationRatio = calcRatio($sector_nbSigned, $sector_nbSigned + $sector_nbNotSigned);
 			    
-			    $ratioDetails = $sector_nbSigned.' '.$langs->trans('Signed').' / ('.  $sector_nbSigned .' '.$langs->trans('Signed').' + '. $sector_nbNotSigned .' '.$langs->trans('NotSigned').')';
+			    // taux de transformation montant
+			    $ratioDetails = $langs->trans('Amount').' : '.price($sector_totalSigned).' '.$langs->trans('Signed').' / ('.  price($sector_totalSigned) .' '.$langs->trans('Signed').' + '. price($sector_totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			    $sector_transformationRatio = calcRatio($sector_totalSigned, $sector_totalSigned + $sector_totalNotSigned);
+			    
+			    // taux de transformation qty
+			    $ratioDetails .= '<br/>'.$langs->trans('Number').' : '.$langs->trans('Signed').' / ('.  $sector_nbSigned .' '.$langs->trans('Signed').' + '. $sector_nbNotSigned .' '.$langs->trans('NotSigned').')';
+			    $ratioDetails .= ' = '.calcRatio($sector_nbSigned, $sector_nbSigned + $sector_nbNotSigned);
+			    //$transformationRatio = calcRatio($sector_nbSigned, $sector_nbSigned + $sector_nbNotSigned);
+			    
+			    
 			    
 			    
 			    print '<td class="border-left-heavy sector_totalRealised"  style="text-align:right;" >'.price($sector_totalRealised).'</td>';
@@ -304,10 +322,18 @@
 			
 			foreach ($TData['dates'] as  $dateKey => $dateInfos  ){
 			    
-			    $ratioDetails = $dateInfos->nbSigned.' '.$langs->trans('Signed').' / ('.  $dateInfos->nbSigned .' '.$langs->trans('Signed').' + '. $dateInfos->nbNotSigned .' '.$langs->trans('NotSigned').')';
 			    
 			    
-			    $dateInfos->transormationRatio = calcRatio($dateInfos->nbSigned, $dateInfos->nbSigned + $dateInfos->nbNotSigned);
+			    
+			    // taux de transformation montant
+			    $ratioDetails = $langs->trans('Amount').' : '.price($dateInfos->totalSigned).' '.$langs->trans('Signed').' / ('.  price($dateInfos->totalSigned) .' '.$langs->trans('Signed').' + '. price($dateInfos->totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			    $dateInfos->transormationRatio = calcRatio($dateInfos->totalSigned, $dateInfos->totalSigned + $dateInfos->totalNotSigned);
+			    
+			    // taux de transformation qty
+			    $ratioDetails .= '<br/>'.$langs->trans('Number').' : '.$dateInfos->nbSigned.' '.$langs->trans('Signed').' / ('.  $dateInfos->nbSigned .' '.$langs->trans('Signed').' + '. $dateInfos->nbNotSigned .' '.$langs->trans('NotSigned').')';
+			    $ratioDetails .= ' = '.calcRatio($dateInfos->nbSigned, $dateInfos->nbSigned + $dateInfos->nbNotSigned);
+			    //$dateInfos->transormationRatio = calcRatio($dateInfos->nbSigned, $dateInfos->nbSigned + $dateInfos->nbNotSigned);
+			    
 			    
 			    print '<th class="border-left-heavy"  style="text-align:right;" >'.price($dateInfos->totalRealised).'</th>';
 			    print '<th class="border-left-light"  style="text-align:right;" >'.price($dateInfos->totalSigned).'</th>';
@@ -322,10 +348,17 @@
 			    
 			}
 			
-			$global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 			
-			$ratioDetails = $global_nbSigned.' '.$langs->trans('Signed').' / ('.  $global_nbSigned .' '.$langs->trans('Signed').' + '. $global_nbNotSigned.' '.$langs->trans('NotSigned').')';
+			// taux de transformation montant
+			$ratioDetails = $langs->trans('Amount').' : '.price($global_totalSigned).' '.$langs->trans('Signed').' / ('.  price($global_totalSigned) .' '.$langs->trans('Signed').' + '. price($global_totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			$global_transformationRatio = calcRatio($global_totalSigned, $global_totalSigned + $global_totalNotSigned);
 			
+			// taux de transformation qty
+			$ratioDetails .= '<br/>'.$langs->trans('Number').' : '.$langs->trans('Signed').' / ('.  $global_nbSigned .' '.$langs->trans('Signed').' + '. $global_nbNotSigned .' '.$langs->trans('NotSigned').')';
+			$ratioDetails .= ' = '.calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
+			//$$global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
+			
+
 			print '<th class="border-left-heavy"  style="text-align:right;" >'.price($global_totalRealised).'</th>';
 			print '<th class="border-left-light"  style="text-align:right;" >'.price($global_totalSigned).'</th>';
 			print '<th class="border-left-light"  style="text-align:right;"  >'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
@@ -352,10 +385,17 @@
 			    $global_nbSigned += $dateInfos->nbSigned;
 			    $global_totalNotSigned += $dateInfos->totalNotSigned;
 			    $global_nbNotSigned += $dateInfos->nbNotSigned;
-			    $global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_totalNotSigned);
+			    $global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 			    
 			    
-			    $ratioDetails = $global_nbSigned.' '.$langs->trans('Signed').' / ('.  $global_nbSigned .' '.$langs->trans('Signed').' + '. $global_nbNotSigned.' '.$langs->trans('NotSigned').')';
+			    // taux de transformation montant
+			    $ratioDetails = $langs->trans('Amount').' : '.price($global_totalSigned).' '.$langs->trans('Signed').' / ('.  price($global_totalSigned) .' '.$langs->trans('Signed').' + '. price($global_totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			    $global_transformationRatio = calcRatio($global_totalSigned, $global_totalSigned + $global_totalNotSigned);
+			    
+			    // taux de transformation qty
+			    $ratioDetails .= '<br/>'.$langs->trans('Number').' : '.$langs->trans('Signed').' / ('.  $global_nbSigned .' '.$langs->trans('Signed').' + '. $global_nbNotSigned .' '.$langs->trans('NotSigned').')';
+			    $ratioDetails .= ' = '.calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
+			    //$$global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 			    
 			    print '<th class="border-left-heavy"  style="text-align:right;" >'.price($global_totalRealised).'</th>';
 			    print '<th class="border-left-light"  style="text-align:right;" >'.price($global_totalSigned).'</th>';
