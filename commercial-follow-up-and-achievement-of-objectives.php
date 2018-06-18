@@ -559,7 +559,7 @@
 					MONTH('.$date_field.') month,
 					YEAR('.$date_field.') year
 			FROM '.MAIN_DB_PREFIX.'propal p
-			LEFT JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
+			LEFT OUTER JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
 			LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)
 			WHERE 1 ';
 	    
