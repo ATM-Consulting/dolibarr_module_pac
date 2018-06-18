@@ -65,7 +65,7 @@
 	
 	
 	
-	function prepareTDataFromSql ($sql, &$TData, $type){
+	function prepareTDataFromSql ($sql, &$TData, $type, $forceCatId = false){
 	    global $db;
 	    
 	    $resql = $db->query($sql);
@@ -75,6 +75,8 @@
 	            // dispatch results
 	            
 	            if(empty($line->fk_categorie)){ $line->fk_categorie = 0; } // in NULL case
+	            
+	            if($forceCatId === false){ $line->fk_categorie = 0; } // in forceCatId case
 	            
 	            $line->time = strtotime($line->year.'-'.$line->month.'-01 00:00:00'); // utilisé plus tard juste poour un affichage propre des dates
 	            
@@ -585,9 +587,9 @@
 	    
 	    // cherche et prepare les tiers hors catégorie
 	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT)){
-	        $sqlCatFilter=' AND ISNULL(cs.fk_categorie) ';
+	        $sqlCatFilter=' AND cs.fk_categorie NOT IN ('.implode(',', $catLists).') ';
 	        $sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
-	        prepareTDataFromSql ($sqlCatIn, $TData, $type);
+	        prepareTDataFromSql ($sqlCatIn, $TData, $type, 0);
 	    }
 	    
 	    
