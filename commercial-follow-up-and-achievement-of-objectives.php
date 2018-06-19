@@ -553,21 +553,24 @@
 	    // Pour l'instant le montant réalisé se met dans le mois de cloture si la propale est close.
 	    
 	    
-	    $sql = 'SELECT
-					SUM(p.total_ht) total_ht,
-					count(p.rowid) totalcount,
-					cs.fk_categorie,
-					MONTH('.$date_field.') month,
-					YEAR('.$date_field.') year
-			FROM '.MAIN_DB_PREFIX.'propal p
-			LEFT OUTER JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)
-			LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)
-			WHERE 1 ';
+	    $sqlSelect = 'SELECT';
+	    $sqlSelect.= '	SUM(p.total_ht) total_ht,';
+	    $sqlSelect.= '	count(p.rowid) totalcount,';
+	    $sqlSelect.= '	MONTH('.$date_field.') month,';
+	    $sqlSelect.= '	YEAR('.$date_field.') year';
+		
+		
+		$sqlFrom= ' FROM '.MAIN_DB_PREFIX.'propal p';
+		
+		$sqlJoin= ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)';
+		$sqlJoin.= ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)';
+		
+		$sqlWhere= ' WHERE 1 ';
 	    
-	    if($iduser>0) $sql.= ' AND sc.fk_user = '.$iduser;
-	    $sql.= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") ';
+		if($iduser>0) $sqlWhere.= ' AND sc.fk_user = '.$iduser;
+		$sqlWhere.= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") ';
 	    
-	    $sql.= $sqlStatus;
+		$sqlWhere.= $sqlStatus;
 	    
 	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT) && !empty($catLists)){
 	        $sqlCatFilter=' AND cs.fk_categorie IN ('.implode(',', $catLists).') ';
@@ -581,13 +584,15 @@
 	    
 	    
 	    // prepare with parent cat
-	    $sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
+	    $sqlCatIn = $sqlSelect.', cs.fk_categorie '.$sqlFrom.$sqlJoin.$sqlWhere.$sqlCatFilter.$sqlGroup.$sqlOrder;
 	    prepareTDataFromSql ($sqlCatIn, $TData, $type);
 	    
 	    // cherche et prepare les tiers hors catégorie
 	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT)){
-	        $sqlCatFilter=' AND cs.fk_categorie NOT IN ('.implode(',', $catLists).') ';
-	        $sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
+	        $sqlCatFilter =' AND cs.fk_categorie NOT IN ('.implode(',', $catLists).')';
+	        $sqlCatFilter.=' AND p.fk_soc NOT IN (SELECT sqcs.fk_soc FROM  '.MAIN_DB_PREFIX.'categorie_societe sqcs WHERE  sqcs.fk_categorie IN ('.implode(',', $catLists).') )';
+	        $sqlGroup = ' GROUP BY  MONTH('.$date_field.'), YEAR('.$date_field.') ';
+	        $sqlCatIn = $sqlSelect.$sqlFrom.$sqlJoin.$sqlWhere.$sqlCatFilter.$sqlGroup.$sqlOrder;
 	        prepareTDataFromSql ($sqlCatIn, $TData, $type, 1);
 	    }
 	    
