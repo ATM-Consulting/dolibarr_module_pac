@@ -555,7 +555,7 @@
 	    
 	    $sql = 'SELECT
 					SUM(p.total_ht) total_ht,
-					count(p.rowid) totalcount
+					count(p.rowid) totalcount,
 					cs.fk_categorie,
 					MONTH('.$date_field.') month,
 					YEAR('.$date_field.') year
