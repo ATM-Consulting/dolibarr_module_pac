@@ -65,7 +65,7 @@
 	
 	
 	
-	function prepareTDataFromSql ($sql, &$TData, $type, $forceCatId = false){
+	function prepareTDataFromSql ($sql, &$TData, $type, $forceNull = false){
 	    global $db;
 	    
 	    $resql = $db->query($sql);
@@ -76,7 +76,7 @@
 	            
 	            if(empty($line->fk_categorie)){ $line->fk_categorie = 0; } // in NULL case
 	            
-	            if($forceCatId !== false){ $line->fk_categorie = $forceCatId; } // in forceCatId case
+	            if($forceNull){ $line->fk_categorie = 0; } // in forceCatId case
 	            
 	            $line->time = strtotime($line->year.'-'.$line->month.'-01 00:00:00'); // utilisé plus tard juste poour un affichage propre des dates
 	            
@@ -555,8 +555,7 @@
 	    
 	    $sql = 'SELECT
 					SUM(p.total_ht) total_ht,
-					count(p.rowid) totalcount,
-					p.fk_statut,
+					count(p.rowid) totalcount
 					cs.fk_categorie,
 					MONTH('.$date_field.') month,
 					YEAR('.$date_field.') year
@@ -577,7 +576,7 @@
 	        $sqlCatFilter=' AND cs.fk_categorie = 0 ';
 	    }
 	    
-	    $sqlGroup = ' GROUP BY  cs.fk_categorie, p.fk_statut,  MONTH('.$date_field.'), YEAR('.$date_field.') ';
+	    $sqlGroup = ' GROUP BY  cs.fk_categorie,  MONTH('.$date_field.'), YEAR('.$date_field.') ';
 	    $sqlOrder .= 'ORDER BY '.$date_field.' ASC';
 	    
 	    
@@ -589,7 +588,7 @@
 	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT)){
 	        $sqlCatFilter=' AND cs.fk_categorie NOT IN ('.implode(',', $catLists).') ';
 	        $sqlCatIn = $sql.$sqlCatFilter.$sqlGroup.$sqlOrder;
-	        prepareTDataFromSql ($sqlCatIn, $TData, $type, 0);
+	        prepareTDataFromSql ($sqlCatIn, $TData, $type, 1);
 	    }
 	    
 	    
