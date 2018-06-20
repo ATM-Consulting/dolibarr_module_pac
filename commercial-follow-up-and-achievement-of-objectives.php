@@ -562,7 +562,7 @@
 	    }
 	    elseif($type=='allSigned'){
 	        // - Toutes les propales signée (fk_statut IN (2,4)) sur date_cloture (ou date_signature à revoir)
-	        $date_field ='p.date_cloture';
+	        $date_field ='  COALESCE(NULLIF(pex.propal_extrafields,\'\'), p.date_cloture) ';
 	        $sqlStatus = ' AND p.fk_statut IN (2,4) ';
 	        
 	    }
@@ -587,7 +587,7 @@
 		
 		$sqlFrom= ' FROM '.MAIN_DB_PREFIX.'propal p';
 		
-		$sqlJoin ='';
+		$sqlJoin = ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'propal_extrafields pex ON (pex.fk_object = p.rowid)';
 		if($iduser>0) $sqlJoin.= ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'element_contact ec ON (ec.element_id = p.rowid)';
 		
 		
