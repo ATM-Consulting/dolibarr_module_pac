@@ -42,3 +42,5 @@ TransformationRatio=Transfo
 withoutCategory=Hors secteurs surveillé
 Sector=Secteur
 TotalCumule=Total cumulé
+PAC_COMERCIAL_FOLLOWUP_DEFAULT_GLOBAL_GOAL=Objectif commercial mensuel global par defaut (utilisé sur le rapport de Suivi commercial et réalisation des objectifs)
+PAC_COMERCIAL_FOLLOWUP_DEFAULT_USER_GOAL=Objectif commercial mensuel employé par defaut (utilisé sur le rapport de Suivi commercial et réalisation des objectifs)
