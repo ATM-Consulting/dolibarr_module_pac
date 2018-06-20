@@ -562,7 +562,7 @@
 	    }
 	    elseif($type=='allSigned'){
 	        // - Toutes les propales signée (fk_statut IN (2,4)) sur date_cloture (ou date_signature à revoir)
-	        $date_field ='  COALESCE(NULLIF(pex.propal_extrafields,\'\'), p.date_cloture) ';
+	        $date_field = '  COALESCE(NULLIF(pex.date_signature,\'\'), p.date_cloture) ';
 	        $sqlStatus = ' AND p.fk_statut IN (2,4) ';
 	        
 	    }
