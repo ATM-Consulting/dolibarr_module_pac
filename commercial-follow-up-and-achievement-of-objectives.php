@@ -551,7 +551,7 @@
 	    global $db, $conf;
 	    //$conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT = 0;
 	    
-	    $date_deb = $date_fin = "2018-06-18";
+	   // $date_deb = $date_fin = "2018-06-18";
 	    
 	    // A mon avis il faut 3 requête avec un UNION :
 	    if($type=='all'){
