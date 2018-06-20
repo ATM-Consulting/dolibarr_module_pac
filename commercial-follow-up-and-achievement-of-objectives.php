@@ -69,7 +69,7 @@
 	    global $db;
 	    
 	    $resql = $db->query($sql);
-	    //print $sql;
+	    //print '<br><br>'.$sql;
 	    if ($resql){
 	        while ($line = $db->fetch_object($resql)){
 	            // dispatch results
@@ -87,6 +87,30 @@
 	        }
 	    }
 	}
+	
+	function prepareTDataFromSqlHorsCat ($sql, &$TData, $type){
+	    global $db;
+	    
+	    $resql = $db->query($sql);
+	    //print '<br><br>'.$sql;
+	    if ($resql){
+	        while ($line = $db->fetch_object($resql)){
+	            // dispatch results
+	            
+	            if(empty($line->fk_categorie)){ $line->fk_categorie = 0; } // in NULL case
+	            
+	            $line->fk_categorie = 0;
+	            
+	            $line->time = strtotime($line->year.'-'.$line->month.'-01 00:00:00'); // utilisé plus tard juste poour un affichage propre des dates
+	            
+	            $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$type] = $line ; // les résultats brute
+	            $TData['dates'][$line->year.'-'.$line->month] = new stdClass();// liste des mois
+	            $TData['dates'][$line->year.'-'.$line->month]->time = $line->time; // utilisé plus tard juste poour un affichage propre des dates
+	            
+	        }
+	    }
+	}
+	
 	
 	function _print_filtres(){
 		global $db, $langs;
@@ -525,7 +549,9 @@
 	
 	function _get_propales_query(&$TData, $catLists, $iduser, $date_deb, $date_fin, $type = 'all'){
 	    global $db, $conf;
+	    //$conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT = 0;
 	    
+	    $date_deb = $date_fin = "2018-06-18";
 	    
 	    // A mon avis il faut 3 requête avec un UNION :
 	    if($type=='all'){
@@ -550,7 +576,7 @@
 	        return false;
 	    }
 	    
-	    // Pour l'instant le montant réalisé se met dans le mois de cloture si la propale est close.
+	    // Pour l'instant le montant réalisé se met dans le mois de cloture si la propale est close.propal
 	    
 	    
 	    $sqlSelect = 'SELECT';
@@ -559,41 +585,57 @@
 	    $sqlSelect.= '	MONTH('.$date_field.') month,';
 	    $sqlSelect.= '	YEAR('.$date_field.') year';
 		
-		
 		$sqlFrom= ' FROM '.MAIN_DB_PREFIX.'propal p';
 		
-		$sqlJoin= ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'societe_commerciaux sc ON (sc.fk_soc = p.fk_soc)';
-		$sqlJoin.= ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)';
+		$sqlJoin ='';
+		if($iduser>0) $sqlJoin.= ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'element_contact ec ON (ec.element_id = p.rowid)';
+		
 		
 		$sqlWhere= ' WHERE 1 ';
 	    
-		if($iduser>0) $sqlWhere.= ' AND sc.fk_user = '.$iduser;
+		if($iduser>0) $sqlWhere.= ' AND ec.fk_c_type_contact = 31 AND ec.fk_socpeople = '.$iduser;
+		
 		$sqlWhere.= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") ';
 	    
 		$sqlWhere.= $sqlStatus;
+		
+		$sqlGroup = ' GROUP BY ';
+		$sqlGroup.= ' MONTH('.$date_field.'), YEAR('.$date_field.') ';
 	    
-	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT) && !empty($catLists)){
-	        $sqlCatFilter=' AND cs.fk_categorie IN ('.implode(',', $catLists).') ';
-	    }
-	    else{
-	        $sqlCatFilter=' AND cs.fk_categorie = 0 ';
-	    }
-	    
-	    $sqlGroup = ' GROUP BY  cs.fk_categorie,  MONTH('.$date_field.'), YEAR('.$date_field.') ';
-	    $sqlOrder .= 'ORDER BY '.$date_field.' ASC';
+	    $sqlOrder .= ' ORDER BY '.$date_field.' ASC';
 	    
 	    
 	    // prepare with parent cat
-	    $sqlCatIn = $sqlSelect.', cs.fk_categorie '.$sqlFrom.$sqlJoin.$sqlWhere.$sqlCatFilter.$sqlGroup.$sqlOrder;
-	    prepareTDataFromSql ($sqlCatIn, $TData, $type);
+	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT) && !empty($catLists)){
+	        
+	        $sql = $sqlSelect.' , cs.fk_categorie fk_categorie ';
+	        $sql.= $sqlFrom;
+	        $sql.= $sqlJoin.' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc) ';
+	        $sql.= $sqlWhere;
+	        $sql.= $sqlCatFilter.' AND cs.fk_categorie IN ('.implode(',', $catLists).') ';
+	        $sql.= $sqlGroup.' , cs.fk_categorie  ';
+	        $sql.= $sqlOrder;
+	    }
+	    else {
+	        $sql = $sqlSelect.$sqlFrom.$sqlJoin.$sqlWhere.$sqlCatFilter.$sqlGroup.$sqlOrder;
+	    }
+	    
+	    prepareTDataFromSql ($sql, $TData, $type);
+	    
 	    
 	    // cherche et prepare les tiers hors catégorie
 	    if(!empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT)){
-	        $sqlCatFilter =' AND cs.fk_categorie NOT IN ('.implode(',', $catLists).')';
-	        $sqlCatFilter.=' AND p.fk_soc NOT IN (SELECT sqcs.fk_soc FROM  '.MAIN_DB_PREFIX.'categorie_societe sqcs WHERE  sqcs.fk_categorie IN ('.implode(',', $catLists).') )';
-	        $sqlGroup = ' GROUP BY  MONTH('.$date_field.'), YEAR('.$date_field.') ';
-	        $sqlCatIn = $sqlSelect.$sqlFrom.$sqlJoin.$sqlWhere.$sqlCatFilter.$sqlGroup.$sqlOrder;
-	        prepareTDataFromSql ($sqlCatIn, $TData, $type, 1);
+	        
+	        $sql = $sqlSelect;
+	        $sql.= $sqlFrom;
+	        $sql.= $sqlJoin;
+	        $sql.= $sqlWhere;
+	        $sql.= $sqlCatFilter.' AND p.fk_soc NOT IN (SELECT sqcs.fk_soc FROM  '.MAIN_DB_PREFIX.'categorie_societe sqcs WHERE  sqcs.fk_categorie IN ('.implode(',', $catLists).') )';
+	        $sql.= $sqlGroup;
+	        $sql.= $sqlOrder;
+	        
+	        
+	        prepareTDataFromSqlHorsCat ($sql, $TData, $type, 1);
 	    }
 	    
 	    
