@@ -14,6 +14,7 @@ class followupGoal{
     public $year = 0;
     public $month= 0;
     public $amount=0;
+    public $fk_cat=0;
     
     function __construct($db) {
         $this->db = $db;
@@ -33,6 +34,23 @@ class followupGoal{
         return $saveRight;
     }
     
+    static function getAmount ($fk_user, $y , $m, $fk_cat=0){
+        global $db, $conf;
+        
+        $followupGoal = new followupGoal($db);
+        if($followupGoal->fetchFromDate($fk_user, $y , $m, $fk_cat))
+        {
+            return $followupGoal->amount;
+        }
+        elseif (!empty($fk_user) && empty($fk_cat)){
+            // Récupération de la valeur par defaut
+            return intval($conf->global->PAC_COMERCIAL_FOLLOWUP_DEFAULT_USER_GOAL);
+        }
+        elseif (empty($fk_user) && empty($fk_cat)){
+            // Récupération de la valeur par defaut
+            return intval($conf->global->PAC_COMERCIAL_FOLLOWUP_DEFAULT_GLOBAL_GOAL);
+        }
+    }
     
     
     function save()
@@ -43,10 +61,11 @@ class followupGoal{
         {
             if(!empty($this->id)){
                 $sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element." SET  ";
-                $sql .= " fk_user='".$this->fk_user ;
-                $sql .= ", year='".intval($this->year);
-                $sql .= ", month='".intval($this->month);
-                $sql .= ", amount='".intval($this->amount);
+                $sql .= " fk_user=".intval($this->fk_user) ;
+                $sql .= ", fk_cat=".intval($this->fk_cat) ;
+                $sql .= ", year=".intval($this->year);
+                $sql .= ", month=".intval($this->month);
+                $sql .= ", amount=".intval($this->amount);
                 $sql .= " WHERE rowid=".$this->id ;
                 
             } else {
@@ -55,8 +74,8 @@ class followupGoal{
                 $last_id = $this->db->fetch_array($res);
                 $last_id = $last_id[0]+1;
                 $sql = "INSERT INTO ".MAIN_DB_PREFIX.$this->table_element;
-                $sql .= " (rowid,fk_user, year,month,amount)  VALUES  (";
-                $sql .= " '".$last_id."','".intval($this->fk_user)."','".intval($this->year)."','".intval($this->month)."',".(!empty($this->amount)?'\''.intval($this->amount).'\'':'NULL').")";
+                $sql .= " (rowid,fk_user,fk_cat,year,month,amount)  VALUES  (";
+                $sql .= " ".$last_id.",".intval($this->fk_user).",".intval($this->fk_cat).",".intval($this->year).",".intval($this->month).",".(!empty($this->amount)?intval($this->amount):'NULL').")";
             }
             $this->lastSql = $sql;
             $res = $this->db->query($sql);
@@ -76,7 +95,7 @@ class followupGoal{
      * 	@param		int		$rowid : contratdet rowid
      * 	@return		bool
      */
-    function fetchFromDate($fk_user, $y , $m){
+    function fetchFromDate($fk_user, $y , $m, $fk_cat=0){
         
         $sql ="SELECT * FROM ".MAIN_DB_PREFIX.$this->table_element;
         $sql.=" WHERE fk_user=".intval($fk_user);

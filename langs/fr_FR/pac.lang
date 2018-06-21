@@ -33,6 +33,8 @@ NbPropal=Nb. Propale signées/facturée
 NbCustomer=Nb. Client
 
 # CommercialFollowUp
+EditGoal=Modifier l'objectif
+PermChangeGoal=Modifier les objectifs pour le rapport de Suivi commercial et réalisation des objectifs
 PAC_COMERCIAL_FOLLOWUP_PARENT_CAT=Catégorie parente utiliser pour déterminer les secteurs des tiers pour le rapport de "Suivi commercial et réalisation des objectifs"
 CommercialFollowUp=Suivi commercial et réalisation des objectifs
 Realized=Réalisées
@@ -44,3 +46,5 @@ Sector=Secteur
 TotalCumule=Total cumulé
 PAC_COMERCIAL_FOLLOWUP_DEFAULT_GLOBAL_GOAL=Objectif commercial mensuel global par defaut (utilisé sur le rapport de Suivi commercial et réalisation des objectifs)
 PAC_COMERCIAL_FOLLOWUP_DEFAULT_USER_GOAL=Objectif commercial mensuel employé par defaut (utilisé sur le rapport de Suivi commercial et réalisation des objectifs)
+Goal=Objectif
+ClicToChangeGoal=Ciquez pour modifier le montant de l'objectif
