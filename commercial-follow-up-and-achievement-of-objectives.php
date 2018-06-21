@@ -729,39 +729,37 @@
 	
 	    global $langs, $user,$form;
 	    
-	    if(!empty($followupGoal)){
-	        $goalRatio = calcRatio($dateInfos->totalSigned, $followupGoal) ;
-	        $goalRatioDetails = $langs->trans('Goal').': '.$dateInfos->totalSigned .' / '. $followupGoal .' = '.$goalRatio;
-	        if(!empty($user->rights->pac->changeGoal))
-	        {
-	            $idTag = $idUser.'-'.date('Y', $dateInfos->time).'-'.date('m', $dateInfos->time).'-0';
-	            
-	            $goalRatioDetails.= '<br/><strong>'.$langs->trans('ClicToChangeGoal').'</strong>';
-	            
-	            print '<div id="goalResume_'.$idTag.'" class="goalResume" data-idtag="'.$idTag.'" >'.$form->textwithtooltip(price($goalRatio).'%', $goalRatioDetails, 3).'</div>';
-	            
-	            print '<div id="goalformwrap_'.$idTag.'" class="goalformwrap"  style="display:none;"  >';
-	            $url = "http" . (($_SERVER['SERVER_PORT'] == 443) ? "s" : "") . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'].'#goalResume_'.$idTag;
-	            $Tform = new TFormCore($url,'goalform_'.$idTag, 'POST');
-	            print '<input name="y" type="hidden" value="'.date('Y', $dateInfos->time).'" />';
-	            print '<input name="m" type="hidden" value="'.date('m', $dateInfos->time).'" />';
-	            print '<input name="fk_user" type="hidden" value="'.$idUser.'" />';
-	            print '<input name="fk_cat" type="hidden" value="0" />';
-	            print '<label>'.$langs->trans('EditGoal').'</label><br/>';
-	            print '<input name="amount" class="goalfield" type="number" min="0" step="1" value="'.$followupGoal.'" />';
-	            print '<br/><button class="butAction" type="submit" name="action" value="savegoal" >'.$langs->trans('Save').'</button>';
-	            print '<button class="butAction annuleformgoal" data-idtag="'.$idTag.'" >'.$langs->trans('Cancel').'</button>';
-	            
-	            $Tform->end();
-	            print '</div>';
-	            
-	        }
-	        else
-	        {
-	            print '<div class="goalResume" >'.$form->textwithtooltip(price($goalRatio).'%', $goalRatioDetails, 3).'</div>';
-	        }
+        $goalRatio = calcRatio($dateInfos->totalSigned, $followupGoal) ;
+        $goalRatioDetails = $langs->trans('Goal').': '.$dateInfos->totalSigned .' / '. $followupGoal .' = '.$goalRatio;
+        if(!empty($user->rights->pac->changeGoal))
+        {
+            $idTag = $idUser.'-'.date('Y', $dateInfos->time).'-'.date('m', $dateInfos->time).'-0';
+            
+            $goalRatioDetails.= '<br/><strong>'.$langs->trans('ClicToChangeGoal').'</strong>';
+            
+            print '<div id="goalResume_'.$idTag.'" class="goalResume" data-idtag="'.$idTag.'" >'.$form->textwithtooltip(price($goalRatio).'%', $goalRatioDetails, 3).'</div>';
+            
+            print '<div id="goalformwrap_'.$idTag.'" class="goalformwrap"  style="display:none;"  >';
+            $url = "http" . (($_SERVER['SERVER_PORT'] == 443) ? "s" : "") . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'].'#goalResume_'.$idTag;
+            $Tform = new TFormCore($url,'goalform_'.$idTag, 'POST');
+            print '<input name="y" type="hidden" value="'.date('Y', $dateInfos->time).'" />';
+            print '<input name="m" type="hidden" value="'.date('m', $dateInfos->time).'" />';
+            print '<input name="fk_user" type="hidden" value="'.$idUser.'" />';
+            print '<input name="fk_cat" type="hidden" value="0" />';
+            print '<label>'.$langs->trans('EditGoal').'</label><br/>';
+            print '<input name="amount" class="goalfield" type="number" min="0" step="1" value="'.$followupGoal.'" />';
+            print '<br/><button class="butAction" type="submit" name="action" value="savegoal" >'.$langs->trans('Save').'</button>';
+            print '<button class="butAction annuleformgoal" data-idtag="'.$idTag.'" >'.$langs->trans('Cancel').'</button>';
+            
+            $Tform->end();
+            print '</div>';
+            
+        }
+        else
+        {
+            print '<div class="goalResume" >'.$form->textwithtooltip(price($goalRatio).'%', $goalRatioDetails, 3).'</div>';
+        }
 	        
-	        
-	    }
+	      
 	
 	}
