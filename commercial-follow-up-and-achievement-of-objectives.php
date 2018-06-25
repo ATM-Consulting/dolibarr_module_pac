@@ -219,7 +219,7 @@
 			if(empty($TData)) return ;
 			
 			// INIT DATE INFOS TOTALS
-			prepareTData($TData,strtotime($date_deb),strtotime($date_fin));
+			prepareTData($TData,strtotime($date_deb),strtotime($date_fin),1);
 			
 			
 			
@@ -624,11 +624,40 @@
 	    return $tmpArray;
 	}
 	
-	function prepareTData(&$TData,$date_deb,$date_fin) {
-	    
+	function prepareTData(&$TData,$date_deb,$date_fin,$sortcat=0) {
+	    global $db;
 	    $lastM=date('m',$date_deb);
 	    $lastY=date('Y',$date_deb);
 	    
+	    // SORT CATEGORY
+	    if($sortcat){
+	        $Tlabels=array();
+	        foreach ($TData['data'] as $fk_categorie => $data ){
+	            if($fk_categorie>0)
+	            {
+	               $category = new Categorie($db);
+	               $res = $category->fetch($fk_categorie);
+	               if($res>0){
+	                   $Tlabels[$category->id] = $category->label;
+	               }
+	            }
+	        }
+	        
+	        asort($Tlabels);
+	        $Tlist = array();
+	        
+	        $TdataTemps = $TData['data'];
+	        $TData['data'] = array();
+	        
+	        foreach ($Tlabels as $id => $label){
+	            $TData['data'][$id] = $TdataTemps[$id];
+	        }
+	        
+	        if(!empty($TdataTemps[0])){
+	            $TData['data'][0] = $TdataTemps[0];
+	        }
+	        
+	    }
 	    
 	    
 	    foreach ($TData['dates'] as $dateKey =>& $dateInfos ){
@@ -694,7 +723,7 @@
 	}
 	
 	
-	function getCategoryChild($cat,$deep=0,$returnObject = 0)
+	function getCategoryChild($cat,$deep=0,$returnObject = 0, $sort=0)
 	{
 	    global $db;
 	    
@@ -718,6 +747,24 @@
 	            }
 	        }
 	    }
+	    
+	    if($sort){
+	        $Tlabels=array();
+	        foreach ($Tlist as $id){
+	            $category = new Categorie($db);
+	            $res = $category->fetch($id);
+	            if($res>0){
+	                $Tlabels[$category->id] = $category->label;
+	            }
+	        }
+	        
+	        asort($Tlabels);
+	        $Tlist = array();
+	        foreach ($Tlabels as $id => $label){
+	            $Tlist[] = $id;
+	        }
+	    }
+	    
 	    
 	    return $Tlist;
 	    
