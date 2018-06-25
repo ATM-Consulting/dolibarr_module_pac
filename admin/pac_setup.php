@@ -105,19 +105,7 @@ print '<td align="center" width="20">&nbsp;</td>';
 print '<td align="center" width="100">'.$langs->trans("Value").'</td>'."\n";
 
 
-// Example with a yes / no select
-$var=!$var;
-print '<tr '.$bc[$var].'>';
-print '<td>'.$langs->trans("ParamLabel").'</td>';
-print '<td align="center" width="20">&nbsp;</td>';
-print '<td align="right" width="300">';
-print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
-print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-print '<input type="hidden" name="action" value="set_CONSTNAME">';
-print $form->selectyesno("CONSTNAME",$conf->global->CONSTNAME,1);
-print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
-print '</form>';
-print '</td></tr>';
+_print_on_off('PAC_DISPLAY_K_AMOUNT');
 
 
 $var=!$var;
@@ -175,3 +163,27 @@ print '</table>';
 llxFooter();
 
 $db->close();
+
+
+
+function _print_on_off($confkey, $title = false, $desc ='')
+{
+    global $var, $bc, $langs, $conf;
+    $var=!$var;
+    
+    print '<tr '.$bc[$var].'>';
+    print '<td>'.$langs->trans($title?$title:$confkey);
+    if(!empty($desc))
+    {
+        print '<br><small>'.$langs->trans($desc).'</small>';
+    }
+    print '</td>';
+    print '<td align="center" width="20">&nbsp;</td>';
+    print '<td align="center" width="300">';
+    print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<input type="hidden" name="action" value="set_'.$confkey.'">';
+    print ajax_constantonoff($confkey);
+    print '</form>';
+    print '</td></tr>';
+}

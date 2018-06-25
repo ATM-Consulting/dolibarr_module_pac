@@ -53,7 +53,6 @@
 	
 	llxHeader('',$langs->trans('CommercialFollowUp'),'', '', 0, 0, array(), array('/pac/css/pac.css') );
 	
-	print dol_get_fiche_head($langs->trans('CommercialFollowUp'));
 	print_fiche_titre($langs->trans("CommercialFollowUp"));
 	
 	
@@ -102,7 +101,7 @@
 	
 	
 	
-	function prepareTDataFromSql ($sql, &$TData, $type, $forceNull = false){
+	function prepareTDataFromSql($sql, &$TData, $type, $forceNull = false){
 	    global $db;
 	    
 	    $resql = $db->query($sql);
@@ -209,6 +208,7 @@
 		if(GETPOST('date_fin')=='')$date_fin=date('Y-m-t');
 		
 		
+		
 		/*$dateSignaturesearchField = 'search_options_'.'date_signature' ;
 		$param = '&search_month='.date('m',strtotime($date_deb)).'&search_year='.date('Y',strtotime($date_deb)).$dateSignaturesearchField.'=';
 		$listLink = dol_buildpath('comm/propal/list.php', 2) . '?formfilteraction=list&action=list&sortfield=p.ref&sortorder=desc'.$param;*/
@@ -219,9 +219,11 @@
 			if(empty($TData)) return ;
 			
 			// INIT DATE INFOS TOTALS
-			prepareTData($TData);
+			prepareTData($TData,strtotime($date_deb),strtotime($date_fin));
 			
-			print '<table class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">';
+			
+			
+			print '<div id="goalTableGlobalWrap"><div id="goalTableWrap"><table id="fixedTable" class="tagtable liste'.($moreforfilter?" listwithfilterbefore":"").'">';
 
 			// TABLE HEAD
 			print '<thead>';
@@ -235,7 +237,10 @@
 			
 			
 			print '<tr class="liste_titre">';
-			print '<th class="cellMinWidth" >'.$langs->trans('Sector').'</th>';
+			print '<th class="cellMinWidth" style="z-index:10" >';
+			_printParentCat();
+			print '</th>';
+			
 			foreach ($TData['dates'] as $dateInfos ){
 			    print '<th class="border-left-heavy cellMinWidth"  style="text-align:center;" >'.$langs->trans('Realized').'</th>';
 			    print '<th class="border-left-light cellMinWidth"  style="text-align:center;" >'.$langs->trans('Signed').'</th>';
@@ -261,7 +266,7 @@
 			         $catLabel = $categorie->label;
 			    }
 			    print '<tr class="oddeven">';
-			    print '<th style="text-align:left;" >'.$catLabel.'</th>';
+			    print '<th style="text-align:left;"  >'.$catLabel.'</th>';
 			    
 			    $sector_totalRealised = 0;
 			    $sector_nbRealised = 0;
@@ -310,7 +315,7 @@
 			        }
 			        
 			        // taux de transformation montant
-			        $ratioDetails = $langs->trans('Amount').' : '.price($totalSigned).' '.$langs->trans('Signed').' / ('.  price($totalSigned) .' '.$langs->trans('Signed').' + '. price($totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			        $ratioDetails = $langs->trans('Amount').' : '.displayAmount($totalSigned).' '.$langs->trans('Signed').' / ('.  displayAmount($totalSigned) .' '.$langs->trans('Signed').' + '. displayAmount($totalNotSigned) .' '.$langs->trans('NotSigned').')';
 			        $transformationRatio = calcRatio($totalSigned, $totalSigned + $totalNotSigned);
 			        $ratioDetails .= ' = '.$transformationRatio . '%';
 			        
@@ -319,8 +324,8 @@
 			        $ratioDetails .= ' = '.calcRatio($nbSigned, $nbSigned + $nbNotSigned) . '%';
 			        //$transformationRatio = calcRatio($nbSigned, $nbSigned + $nbNotSigned);
 			        
-			        print '<td class="border-left-heavy totalRealised"  style="text-align:right;" >'.price($totalRealised).'</td>'; //<a target="_blank" href="'.$listLink.'" >'.price($totalRealised).'</a>
-			        print '<td class="border-left-light totalSigned"  style="text-align:right;" >'.price($totalSigned).'</td>'; // <a href="'.$listLink.'&propal_statut=2,3,4" >'.price($totalSigned).'</a>
+			        print '<td class="border-left-heavy totalRealised"  style="text-align:right;" >'.displayAmount($totalRealised).'</td>'; //<a target="_blank" href="'.$listLink.'" >'.displayAmount($totalRealised).'</a>
+			        print '<td class="border-left-light totalSigned"  style="text-align:right;" >'.displayAmount($totalSigned).'</td>'; // <a href="'.$listLink.'&propal_statut=2,3,4" >'.displayAmount($totalSigned).'</a>
 			        print '<td class="border-left-light transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(price($transformationRatio).'%', $ratioDetails, 3).'</td>';
 			        
 			        
@@ -352,7 +357,7 @@
 			    
 			    
 			    // taux de transformation montant
-			    $ratioDetails = $langs->trans('Amount').' : '.price($sector_totalSigned).' '.$langs->trans('Signed').' / ('.  price($sector_totalSigned) .' '.$langs->trans('Signed').' + '. price($sector_totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			    $ratioDetails = $langs->trans('Amount').' : '.displayAmount($sector_totalSigned).' '.$langs->trans('Signed').' / ('.  displayAmount($sector_totalSigned) .' '.$langs->trans('Signed').' + '. displayAmount($sector_totalNotSigned) .' '.$langs->trans('NotSigned').')';
 			    $sector_transformationRatio = calcRatio($sector_totalSigned, $sector_totalSigned + $sector_totalNotSigned);
 			    $ratioDetails .= ' = '.$sector_transformationRatio . '%';
 			    
@@ -364,9 +369,9 @@
 			    
 			    
 			    
-			    print '<td class="border-left-heavy sector_totalRealised"  style="text-align:right;" >'.price($sector_totalRealised).'</td>';
-			    print '<td class="border-left-light sector_totalSigned"  style="text-align:right;" >'.price($sector_totalSigned).'</td>';
-			    print '<td class="border-left-light sector_transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(price($sector_transformationRatio).'%', $ratioDetails, 3).'</td>';
+			    print '<td class="border-left-heavy sector_totalRealised"  style="text-align:right;" >'.displayAmount($sector_totalRealised).'</td>';
+			    print '<td class="border-left-light sector_totalSigned"  style="text-align:right;" >'.displayAmount($sector_totalSigned).'</td>';
+			    print '<td class="border-left-light sector_transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(displayAmount($sector_transformationRatio).'%', $ratioDetails, 3).'</td>';
 			    print '</tr>';
 			    
 			}
@@ -376,9 +381,42 @@
 			
 			print '<tfoot>';
 			
-			// TOTAL LINE
-			print '<tr  class="oddeven" >';
-			print '<th style="text-align:right;" >'.$langs->trans('Total').'</th>';
+			
+			/*****************
+			 * TOTAUX
+			 ***************************/
+			
+			
+			
+			// INIT DES LIGNES
+			$totalLine['total'] = '<!-- total --><tr  class="oddeven" >';
+			$totalLine['total'].= '<th style="text-align:right; z-index: 10;" class="border-top-heavy " >'.$langs->trans('Total').'</th>';
+			
+			
+			$totalLine['totalCumule'] = '<!-- totalCumule --><tr  class="oddeven" >';
+			$totalLine['totalCumule'].= '<th style="text-align:right;  z-index: 10;" class="border-top-light" >'.$langs->trans('TotalCumule').'</th>';
+			
+			$totalLine['totalAmountObjectif']       = '<!-- totalAmountObjectif --><tr  class="oddeven" >';
+			$totalLine['totalAmountObjectif'].= '<th style="text-align:right; z-index: 10;"  class="border-top-heavy" >'.$langs->trans('TotalObjectif').'</th>';
+			
+			$totalLine['totalAmountObjectifCumul']  = '<!-- totalAmountObjectifCumul --><tr  class="oddeven" >';
+			$totalLine['totalAmountObjectifCumul']  = '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('TotalObjectifCumul').'</th>';
+			
+			$totalLine['totalDiff']       = '<!-- totalAmountObjectif --><tr  class="oddeven" >';
+			$totalLine['totalDiff'].= '<th style="text-align:right; z-index: 10;"  class="border-top-heavy" >'.$langs->trans('TotalObjectifDiff').'</th>';
+			
+			$totalLine['totalDiffCumul'] = '<!-- totalAmountObjectif --><tr  class="oddeven" >';
+			$totalLine['totalDiffCumul'].= '<th style="text-align:right; z-index: 10;"  class="border-top-heavy" >'.$langs->trans('TotalObjectifDiffCumul').'</th>';
+			
+			$totalLine['totalAmountObjectifCumul']  = '<!-- totalAmountObjectifCumul --><tr  class="oddeven" >';
+			$totalLine['totalAmountObjectifCumul']  = '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('TotalObjectifCumul').'</th>';
+			
+			$totalLine['totalObjectifPercent'] = '<!-- totalObjectifPercent --><tr  class="oddeven" >';
+			$totalLine['totalObjectifPercent'].= '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('TotalObjectifPercent').'</th>';
+			
+			
+			$totalLine['totalObjectifPercentCumul'] = '<!-- totalObjectifPercentCumul --><tr  class="oddeven" >';
+			$totalLine['totalObjectifPercentCumul'].= '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('totalObjectifPercentCumul').'</th>';
 			
 			
 			$global_totalRealised=0;
@@ -394,7 +432,7 @@
 			    
 			    
 			    // taux de transformation montant
-			    $ratioDetails = $langs->trans('Amount').' : '.price($dateInfos->totalSigned).' '.$langs->trans('Signed').' / ('.  price($dateInfos->totalSigned) .' '.$langs->trans('Signed').' + '. price($dateInfos->totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			    $ratioDetails = $langs->trans('Amount').' : '.displayAmount($dateInfos->totalSigned).' '.$langs->trans('Signed').' / ('.  displayAmount($dateInfos->totalSigned) .' '.$langs->trans('Signed').' + '. displayAmount($dateInfos->totalNotSigned) .' '.$langs->trans('NotSigned').')';
 			    $dateInfos->transformationRatio = calcRatio($dateInfos->totalSigned, $dateInfos->totalSigned + $dateInfos->totalNotSigned);
 			    $ratioDetails .= ' = '.$dateInfos->transformationRatio . '%';
 			    
@@ -404,15 +442,27 @@
 			    //$dateInfos->transformationRatio = calcRatio($dateInfos->nbSigned, $dateInfos->nbSigned + $dateInfos->nbNotSigned);
 
 			    
-			    print '<th class="border-left-heavy"  style="text-align:right;" >'.price($dateInfos->totalRealised).'</th>';
+			    
+			    $totalLine['total'].=  '<th class="border-left-heavy  border-top-heavy"  style="text-align:right;" >'.displayAmount($dateInfos->totalRealised).'</th>'; 
+			    $totalLine['total'].=  '<th class="border-left-light border-top-heavy"  style="text-align:right;" >'.displayAmount($dateInfos->totalSigned);		    
+			    $totalLine['total'].=   '</th>';
+			    
+			    $totalLine['total'].=   '<th class="border-left-light border-top-heavy"  style="text-align:right;" >'.$form->textwithtooltip(price($dateInfos->transformationRatio).'%', $ratioDetails, 3).'</th>';
 			    
 			    
-			    print '<th class="border-left-light"  style="text-align:right;" >'.price($dateInfos->totalSigned);
+			    
+			    
 			    $followupGoal = followupGoal::getAmount ($idUser, date('Y', $dateInfos->time) , date('m', $dateInfos->time));
-			    _printGoalField($idUser,$dateInfos,$followupGoal);			    
-			    print '</th>';
 			    
-			    print '<th class="border-left-light"  style="text-align:right;" >'.$form->textwithtooltip(price($dateInfos->transformationRatio).'%', $ratioDetails, 3).'</th>';
+			    $totalLine['totalObjectifPercent'].= '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3" >';
+			    $totalLine['totalObjectifPercent'].= _getGoalField($idUser,$dateInfos,$followupGoal,0,1);
+			    $totalLine['totalObjectifPercent'].= '</th>';
+			    
+			    $totalLine['totalAmountObjectif'].= '<th class="border-left-heavy border-top-heavy"  style="text-align:center;" colspan="3" >';
+			    $totalLine['totalAmountObjectif'].= _getGoalField($idUser,$dateInfos,$followupGoal,1,0);
+			    $totalLine['totalAmountObjectif'].= '</th>';
+			    
+			    
 			    
 			    $global_totalRealised += $dateInfos->totalRealised;
 			    $global_nbRealised += $dateInfos->nbRealised;
@@ -422,11 +472,26 @@
 			    $global_nbNotSigned += $dateInfos->nbNotSigned;
 			    $global_followupGoal += $followupGoal;
 			    
+			    // CUMUL 
+			    
+			    $totalLine['totalAmountObjectifCumul'].= '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3" >';
+			    $totalLine['totalAmountObjectifCumul'].= displayAmount($global_followupGoal);
+			    $totalLine['totalAmountObjectifCumul'].= '</th>';
+			    
+			    
+			    $totalLine['totalObjectifPercentCumul'].= '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3" >';
+			    $goalRatio = calcRatio($global_totalSigned, $global_followupGoal) ;
+			    $goalRatioDetails = $langs->trans('Goal').': '.displayAmount($global_totalSigned) .' / '. displayAmount($global_followupGoal) .' = '.$goalRatio;
+			    $totalLine['totalObjectifPercentCumul'].=  '<div class="goalResume" >'.$form->textwithtooltip($goalRatio.'%', $goalRatioDetails, 3).'</div>';
+			    $totalLine['totalObjectifPercentCumul'].= '</th>';
 			}
 			
+			/*****************
+			 * Dernier bloc de total
+			 ***************************/
 			
 			// taux de transformation montant
-			$ratioDetails = $langs->trans('Amount').' : '.price($global_totalSigned).' '.$langs->trans('Signed').' / ('.  price($global_totalSigned) .' '.$langs->trans('Signed').' + '. price($global_totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			$ratioDetails = $langs->trans('Amount').' : '.displayAmount($global_totalSigned).' '.$langs->trans('Signed').' / ('.  displayAmount($global_totalSigned) .' '.$langs->trans('Signed').' + '. displayAmount($global_totalNotSigned) .' '.$langs->trans('NotSigned').')';
 			$global_transformationRatio = calcRatio($global_totalSigned, $global_totalSigned + $global_totalNotSigned);
 			$ratioDetails .= ' = '.$global_transformationRatio . '%';
 			
@@ -436,23 +501,29 @@
 			//$$global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 			
 
-			print '<th class="border-left-heavy"  style="text-align:right;" >'.price($global_totalRealised).'</th>';
 			
-			print '<th class="border-left-light"  style="text-align:right;" >'.price($global_totalSigned);
+			
+			$totalLine['total'].=   '<th class="border-left-heavy  border-top-heavy"  style="text-align:right;" >'.displayAmount($global_totalRealised).'</th>';
+			$totalLine['total'].=   '<th class="border-left-light  border-top-heavy"  style="text-align:right;" >'.displayAmount($global_totalSigned).'</th>';
+			$totalLine['total'].=   '<th class="border-left-light border-top-heavy"  style="text-align:right;"  >'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
+
+			
+			
+			$totalLine['totalObjectifPercent'].=   '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3"  >';
+			
 			if(!empty($followupGoal)){
-			     $goalRatio = calcRatio($global_totalSigned, $global_followupGoal) ;
-			     $goalRatioDetails = $langs->trans('Goal').': '.$global_totalSigned .' / '. $global_followupGoal .' = '.$goalRatio;
-			     print '<br/>'.$form->textwithtooltip(price($goalRatio).'%', $goalRatioDetails, 3);
+			    $goalRatio = calcRatio($global_totalSigned, $global_followupGoal) ;
+			    $goalRatioDetails = $langs->trans('Goal').': '.$global_totalSigned .' / '. $global_followupGoal .' = '.$goalRatio;
+			    $totalLine['totalObjectifPercent'].=   $form->textwithtooltip(price($goalRatio).'%', $goalRatioDetails, 3);
 			}
-			print '</th>';
+			$totalLine['totalObjectifPercent'].=   '</th>';
 			
-			print '<th class="border-left-light"  style="text-align:right;"  >'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
-			print "</tr>";
+			
+			
+
 			
 			
 			// CUMUL TOTAL LINE
-			print '<tr  class="oddeven" >';
-			print '<th style="text-align:right;" >'.$langs->trans('TotalCumule').'</th>';
 			
 			$global_totalRealised=0;
 			$global_nbRealised=0;
@@ -474,7 +545,7 @@
 			    
 			    
 			    // taux de transformation montant
-			    $ratioDetails = $langs->trans('Amount').' : '.price($global_totalSigned).' '.$langs->trans('Signed').' / ('.  price($global_totalSigned) .' '.$langs->trans('Signed').' + '. price($global_totalNotSigned) .' '.$langs->trans('NotSigned').')';
+			    $ratioDetails = $langs->trans('Amount').' : '.displayAmount($global_totalSigned).' '.$langs->trans('Signed').' / ('.  displayAmount($global_totalSigned) .' '.$langs->trans('Signed').' + '. displayAmount($global_totalNotSigned) .' '.$langs->trans('NotSigned').')';
 			    $global_transformationRatio = calcRatio($global_totalSigned, $global_totalSigned + $global_totalNotSigned);
 			    $ratioDetails .= ' = '.$global_transformationRatio . '%';
 			    
@@ -483,21 +554,40 @@
 			    $ratioDetails .= ' = '.calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned). '%';
 			    //$$global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 			    
-			    print '<th class="border-left-heavy"  style="text-align:right;" >'.price($global_totalRealised).'</th>';
-			    print '<th class="border-left-light"  style="text-align:right;" >'.price($global_totalSigned).'</th>';
-			    print '<th class="border-left-light"  style="text-align:right;" >'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
+			    $totalLine['totalCumule'].= '<th class="border-left-heavy border-top-light"  style="text-align:right;" >'.displayAmount($global_totalRealised).'</th>';
+			    $totalLine['totalCumule'].= '<th class="border-left-light border-top-light"  style="text-align:right;" >'.displayAmount($global_totalSigned).'</th>';
+			    $totalLine['totalCumule'].= '<th class="border-left-light border-top-light"  style="text-align:right;" >'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
+			    
+			    
 			    
 			}
 			
-
-			print '<th class="border-left-heavy" colspan="3" ></th>';
 			
-			print "</tr>";
+			
+			
+			$totalLine['totalCumule'].=  '<th class="border-left-heavy border-top-light" colspan="3"   ></th>';
+			
+			$totalLine['totalAmountObjectif']       .= '<th class="border-left-heavy border-top-heavy" colspan="3"   ></th>';
+			$totalLine['totalAmountObjectifCumul']  .= '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3"  ></th>';
+			$totalLine['totalObjectifPercentCumul']       .= '<th class="border-left-heavy border-top-light" colspan="3"   ></th>';
+			
+			
+			print $totalLine['total']."</tr>";
+			print $totalLine['totalCumule']."</tr>";
+			print $totalLine['totalAmountObjectif']."</tr>";
+			print $totalLine['totalAmountObjectifCumul']."</tr>";
+			
+			
+			
+			print $totalLine['totalObjectifPercent']."</tr>";
+			
+			print $totalLine['totalObjectifPercentCumul']."</tr>";
+			
 			
 			
 			
 			print '</tfoot>';
-			print '</table>';
+			print '</table></div></div>';
 			
 			printGoalJs();
 	}
@@ -533,8 +623,13 @@
 	    return $tmpArray;
 	}
 	
-	function prepareTData(&$TData) {
-	    $lastM=0;
+	function prepareTData(&$TData,$date_deb,$date_fin) {
+	    
+	    $lastM=date('m',$date_deb);
+	    $lastY=date('Y',$date_deb);
+	    
+	    
+	    
 	    foreach ($TData['dates'] as $dateKey =>& $dateInfos ){
 	        
 	        $curM = dol_print_date($dateInfos->time, '%m');
@@ -568,11 +663,37 @@
 	        $dateInfos->transformationRatio = 0;
 	        
 	        $lastM=dol_print_date($dateInfos->time, '%m');
+	        $lastY=dol_print_date($dateInfos->time, '%Y');
 	    }
+	    
+	    $curM = dol_print_date($date_fin, '%m');
+	    $curY = dol_print_date($date_fin, '%Y');
+	    // Date de fin manquante
+	    if(!empty($lastM) && $curM>$lastM){
+	        for ($i = $lastM+1; $i <= $curM; $i++) {
+	            
+	            $newCol = new stdClass();
+	            $newCol->time = mktime(0,0,1,$i,1,$curY);
+	            $newCol->totalRealised = 0;
+	            $newCol->nbRealised = 0;
+	            
+	            $newCol->totalSigned = 0;
+	            $newCol->nbSigned =0;
+	            
+	            $newCol->transformationRatio = 0;
+	            
+	            if(empty($TData['dates'][$curY.'-'.$i])){
+	                $TData['dates'][$curY.'-'.$i] = $newCol;
+	            }
+	            
+	        }
+	    }
+	    
+	    
 	}
 	
 	
-	function getCategoryChild($cat,$deep=0)
+	function getCategoryChild($cat,$deep=0,$returnObject = 0)
 	{
 	    global $db;
 	    
@@ -690,7 +811,7 @@
 	        $sql.= $sqlOrder;
 	        
 	        
-	        prepareTDataFromSqlHorsCat ($sql, $TData, $type, 1);
+	        prepareTDataFromSqlHorsCat ($sql, $TData, $type);
 	    }
 	    
 	    
@@ -701,12 +822,14 @@
 	function printGoalJs(){
 	    global $user;
 	    
-	    if(!empty($user->rights->pac->changeGoal))
-	    {
-	        ?>
-	        <script type="text/javascript" >
-	        $( document ).ready(function() {
-
+	    print '<script src="'.dol_buildpath('/pac/js/fixed_table.min.js',2).'"></script>';
+	    
+	    
+	    print '<script type="text/javascript" >$( document ).ready(function() { ';
+	        
+		if(!empty($user->rights->pac->changeGoal)){ 
+		
+		print "
 	        	$('.goalResume').click(function (e) {
 	        		var idtag = $(this).data('idtag');
 	        		$('#goalformwrap_' + idtag).show();
@@ -717,49 +840,125 @@
 	        		var idtag = $(this).data('idtag');
 	        		$('#goalformwrap_' + idtag).hide();
 	        	});
-
-	        	
-	        });
-	        </script>
-	        <?php
+			";
 	    }
+	    
+	    print "$('#goalTableWrap').width($( window ).width() - $('#id-left').outerWidth() - 25 ) ;";
+	    print "$('#fixedTable').tableHeadFixer({'head' : true, 'left' : 1, foot:true, 'z-index': 10 }); ";
+	    
+	    print "$(window).bind('resize', function () {";
+	    print "$('#goalTableWrap').width($( window ).width() - $('#id-left').outerWidth() - 25 ) ;";
+	    print "});";
+	    
+	   print '}); </script>';
 	}
 	
-	function _printGoalField($idUser,$dateInfos,$followupGoal){
+	function _getGoalField($idUser,$dateInfos,$followupGoal,$addForm = 1,$ratio=0){
 	
 	    global $langs, $user,$form;
 	    
-        $goalRatio = calcRatio($dateInfos->totalSigned, $followupGoal) ;
-        $goalRatioDetails = $langs->trans('Goal').': '.$dateInfos->totalSigned .' / '. $followupGoal .' = '.$goalRatio;
-        if(!empty($user->rights->pac->changeGoal))
+
+	    
+	    $goalRatio = calcRatio($dateInfos->totalSigned, $followupGoal) ;
+	    $goalRatioDetails = $langs->trans('Goal').': '.displayAmount($dateInfos->totalSigned) .' / '. displayAmount($followupGoal) .' = '.$goalRatio;
+        
+        
+        
+        if($ratio){
+            $html = price($goalRatio).'%';
+        }
+        else {
+            $html = displayAmount($followupGoal);
+        }
+        
+        
+        if(!empty($user->rights->pac->changeGoal) && $addForm)
         {
             $idTag = $idUser.'-'.date('Y', $dateInfos->time).'-'.date('m', $dateInfos->time).'-0';
             
             $goalRatioDetails.= '<br/><strong>'.$langs->trans('ClicToChangeGoal').'</strong>';
             
-            print '<div id="goalResume_'.$idTag.'" class="goalResume" data-idtag="'.$idTag.'" >'.$form->textwithtooltip(price($goalRatio).'%', $goalRatioDetails, 3).'</div>';
             
-            print '<div id="goalformwrap_'.$idTag.'" class="goalformwrap"  style="display:none;"  >';
+            
+            
+            $return = '<div id="goalResume_'.$idTag.'" class="goalResume" data-idtag="'.$idTag.'" >'.$form->textwithtooltip($html, $goalRatioDetails, 3).'</div>';
+            
+            $return.= '<div id="goalformwrap_'.$idTag.'" class="goalformwrap"  style="display:none;"  >';
             $url = "http" . (($_SERVER['SERVER_PORT'] == 443) ? "s" : "") . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'].'#goalResume_'.$idTag;
-            $Tform = new TFormCore($url,'goalform_'.$idTag, 'POST');
-            print '<input name="y" type="hidden" value="'.date('Y', $dateInfos->time).'" />';
-            print '<input name="m" type="hidden" value="'.date('m', $dateInfos->time).'" />';
-            print '<input name="fk_user" type="hidden" value="'.$idUser.'" />';
-            print '<input name="fk_cat" type="hidden" value="0" />';
-            print '<label>'.$langs->trans('EditGoal').'</label><br/>';
-            print '<input name="amount" class="goalfield" type="number" min="0" step="1" value="'.$followupGoal.'" />';
-            print '<br/><button class="butAction" type="submit" name="action" value="savegoal" >'.$langs->trans('Save').'</button>';
-            print '<button class="butAction annuleformgoal" data-idtag="'.$idTag.'" >'.$langs->trans('Cancel').'</button>';
+            $Tform = new TFormCore($url,''.$idTag, 'POST');
+            $return.= $Tform->begin_form($url,'goalform_'.$idTag, 'POST', false, '');
             
-            $Tform->end();
-            print '</div>';
+            $return.= '<input name="y" type="hidden" value="'.date('Y', $dateInfos->time).'" />';
+            $return.= '<input name="m" type="hidden" value="'.date('m', $dateInfos->time).'" />';
+            $return.= '<input name="fk_user" type="hidden" value="'.$idUser.'" />';
+            $return.= '<input name="fk_cat" type="hidden" value="0" />';
+            $return.= '<label>'.$langs->trans('EditGoal').'</label><br/>';
+            $return.= '<input name="amount" class="goalfield" type="number" min="0" step="1" value="'.$followupGoal.'" />';
+            $return.= '<br/><button class="butAction" type="submit" name="action" value="savegoal" >'.$langs->trans('Save').'</button>';
+            $return.= '<button class="butAction annuleformgoal" data-idtag="'.$idTag.'" >'.$langs->trans('Cancel').'</button>';
+            
+            
+            $return.= "</form>";
+            $return.= '</div>';
             
         }
         else
         {
-            print '<div class="goalResume" >'.$form->textwithtooltip(price($goalRatio).'%', $goalRatioDetails, 3).'</div>';
+            $return.= '<div class="goalResume" >'.$form->textwithtooltip($html, $goalRatioDetails, 3).'</div>';
         }
-	        
-	      
+        
+        return $return;
+	}
 	
+	function _printGoalField($idUser,$dateInfos,$followupGoal,$addForm = 1,$ratio=0){
+	    
+	    print _getGoalField($idUser,$dateInfos,$followupGoal,$addForm,$ratio);
+	}
+	
+	
+	function _printParentCat()
+	{
+	    global $db, $conf;
+	    $category = new Categorie($db);
+	    $res = $category->fetch($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT);
+	    if($res>0){
+	        print $category->label;
+	    }
+	    else{
+	        print $langs->trans('Category');
+	    }
+	}
+	
+	function displayAmount($amount){
+	    global $conf;
+	    
+	    if(!empty($conf->global->PAC_DISPLAY_K_AMOUNT))
+	    {
+	        $return  = round($amount/1000).'K';
+	        if($amount<500 && $amount>0){
+	            $return = '~'.$return;
+	        }
+	        
+	        return  $return ;
+	    }
+	    
+	    return round($amount);
+	}
+	
+	
+	function percentClass($percent){
+	    global $conf;
+	    
+	    if($percent<80){
+	        return 'goal-danger';
+	    }
+	    elseif($percent<95){
+	        return 'goal-warning';
+	    }
+	    elseif($percent<100){
+	        return 'goal-idle';
+	    }
+	    else{
+	        return 'goal-success';
+	    }
 	}

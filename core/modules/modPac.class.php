@@ -325,6 +325,22 @@ class modPac extends DolibarrModules
 		 $r++;
 		 
 		 
+		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+		     'type'=>'left',			                // This is a Left menu entry
+		     'titre'=>$langs->transnoentitiesnoconv('FollowUpGoal'),
+		     'mainmenu'=>'',
+		     'leftmenu'=>'',
+		     'url'=>'/pac/commercial-follow-up-and-achievement-of-objectives.php',
+		     'langs'=>'pac@pac',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+		     'position'=>152,
+		     'enabled'=>'$conf->pac->enabled',  // Define condition to show or hide menu entry. Use '$conf->pac->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+		     'perms'=>'1',			                // Use 'perms'=>'$user->rights->pac->level1->level2' if you want your menu with a permission rules
+		     'target'=>'',
+		     'user'=>0);				                // 0=Menu for internal users, 1=external users, 2=both
+		 $r++;
+		 
+		 
+		 
 		// Exports
 		$r=1;
 

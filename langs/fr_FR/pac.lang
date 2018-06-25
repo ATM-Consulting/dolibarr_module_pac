@@ -5,6 +5,7 @@ ATMAbout = Ce module a été développé par <a href="http://www.atm-consulting.
 
 PacSetup = Configuration du module Pac
 PacAbout = A propos du module Pac
+PAC_DISPLAY_K_AMOUNT=Afficher les montants en Kilo
 
 PacLeftMenu = Processus Action Commerciale
 
@@ -41,10 +42,17 @@ Realized=Réalisées
 Signed=Signées
 NotSigned=Non signées
 TransformationRatio=Transfo
-withoutCategory=Hors secteurs surveillé
+withoutCategory=Hors catégories surveillées
 Sector=Secteur
 TotalCumule=Total cumulé
 PAC_COMERCIAL_FOLLOWUP_DEFAULT_GLOBAL_GOAL=Objectif commercial mensuel global par defaut (utilisé sur le rapport de Suivi commercial et réalisation des objectifs)
 PAC_COMERCIAL_FOLLOWUP_DEFAULT_USER_GOAL=Objectif commercial mensuel employé par defaut (utilisé sur le rapport de Suivi commercial et réalisation des objectifs)
 Goal=Objectif
 ClicToChangeGoal=Ciquez pour modifier le montant de l'objectif
+FollowUpGoal=Suivi objectif comercial
+TotalObjectif=Objectif
+TotalObjectifPercent=%% Objectif
+totalObjectifPercentCumul=%% Objectif cumulé
+TotalObjectifCumul=Objectif cumulé
+TotalObjectifDiff=Ecart
+TotalObjectifDiffCumul=Ecart cumulé

@@ -50,10 +50,42 @@ div.period {
 .border-left-light{
 	border-left: 1px solid #666 !important;
 }
+.border-top-light{
+	border-top: 1px solid #666 !important;
+}
 .border-left-heavy {
 	border-left: 2px solid #000 !important;
 }
 
 .cellMinWidth{
-	min-width:10em;
+	min-width:5em;
 }
+
+.border-top-heavy{
+	border-top: 2px solid #000 !important;
+}
+
+#goalTableGlobalWrap{
+	max-width: 100%;
+	position:relative;
+	display:block;
+	margin-bottom:200px;
+}
+#goalTableWrap{
+	max-width: 100%;
+	position:relative;
+}
+
+td.goal-danger{
+	backround: #ffb2b2 !important;
+}
+td.goal-warning{
+	backround: #ffe4b2 !important;
+}
+td.goal-idle{
+	/*backround: #ffb2b2 !important;*/
+}
+td.goal-success{
+	backround: #c8ffb2 !important;
+}
+
