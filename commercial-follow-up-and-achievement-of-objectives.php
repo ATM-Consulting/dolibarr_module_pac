@@ -399,17 +399,14 @@
 			$totalLine['totalAmountObjectif']       = '<!-- totalAmountObjectif --><tr  class="oddeven" >';
 			$totalLine['totalAmountObjectif'].= '<th style="text-align:right; z-index: 10;"  class="border-top-heavy" >'.$langs->trans('TotalObjectif').'</th>';
 			
-			$totalLine['totalAmountObjectifCumul']  = '<!-- totalAmountObjectifCumul --><tr  class="oddeven" >';
-			$totalLine['totalAmountObjectifCumul']  = '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('TotalObjectifCumul').'</th>';
-			
 			$totalLine['totalDiff']       = '<!-- totalAmountObjectif --><tr  class="oddeven" >';
-			$totalLine['totalDiff'].= '<th style="text-align:right; z-index: 10;"  class="border-top-heavy" >'.$langs->trans('TotalObjectifDiff').'</th>';
+			$totalLine['totalDiff'].= '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('TotalObjectifDiff').'</th>';
 			
 			$totalLine['totalDiffCumul'] = '<!-- totalAmountObjectif --><tr  class="oddeven" >';
-			$totalLine['totalDiffCumul'].= '<th style="text-align:right; z-index: 10;"  class="border-top-heavy" >'.$langs->trans('TotalObjectifDiffCumul').'</th>';
+			$totalLine['totalDiffCumul'].= '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('TotalObjectifDiffCumul').'</th>';
 			
 			$totalLine['totalAmountObjectifCumul']  = '<!-- totalAmountObjectifCumul --><tr  class="oddeven" >';
-			$totalLine['totalAmountObjectifCumul']  = '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('TotalObjectifCumul').'</th>';
+			$totalLine['totalAmountObjectifCumul']  = '<th style="text-align:right; z-index: 10;"  class="border-top-heavy" >'.$langs->trans('TotalObjectifCumul').'</th>';
 			
 			$totalLine['totalObjectifPercent'] = '<!-- totalObjectifPercent --><tr  class="oddeven" >';
 			$totalLine['totalObjectifPercent'].= '<th style="text-align:right; z-index: 10;"  class="border-top-light" >'.$langs->trans('TotalObjectifPercent').'</th>';
@@ -463,6 +460,10 @@
 			    $totalLine['totalAmountObjectif'].= '</th>';
 			    
 			    
+			    $totalLine['totalDiff'].= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
+			    $totalLine['totalDiff'].= displayAmount($dateInfos->totalSigned-$followupGoal);
+			    $totalLine['totalDiff'].= '</th>';
+			    
 			    
 			    $global_totalRealised += $dateInfos->totalRealised;
 			    $global_nbRealised += $dateInfos->nbRealised;
@@ -476,7 +477,7 @@
 			    
 			    $goalRatio = calcRatio($global_totalSigned, $global_followupGoal) ;
 			    
-			    $totalLine['totalAmountObjectifCumul'].= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
+			    $totalLine['totalAmountObjectifCumul'].= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
 			    $totalLine['totalAmountObjectifCumul'].= displayAmount($global_followupGoal);
 			    $totalLine['totalAmountObjectifCumul'].= '</th>';
 			    
@@ -485,6 +486,12 @@
 			    $totalLine['totalObjectifPercentCumul'].= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
 			    $totalLine['totalObjectifPercentCumul'].=  '<div class="goalResume" >'.$form->textwithtooltip($goalRatio.'%', $goalRatioDetails, 3).'</div>';
 			    $totalLine['totalObjectifPercentCumul'].= '</th>';
+			    
+			    
+			    
+			    $totalLine['totalDiffCumul'].= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
+			    $totalLine['totalDiffCumul'].= displayAmount($global_totalSigned-$global_followupGoal);
+			    $totalLine['totalDiffCumul'].= '</th>';
 			}
 			
 			/*****************
@@ -521,6 +528,13 @@
 			
 			
 			
+			$totalLine['totalAmountObjectif'].= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
+			$totalLine['totalAmountObjectif'].= displayAmount($global_followupGoal);
+			$totalLine['totalAmountObjectif'].= '</th>';
+			
+			$totalLine['totalDiff'].= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
+			$totalLine['totalDiff'].= displayAmount($global_totalSigned-$global_followupGoal);
+			$totalLine['totalDiff'].= '</th>';
 
 			
 			
@@ -568,20 +582,21 @@
 			
 			$totalLine['totalCumule'].=  '<th class="border-left-heavy border-top-light" colspan="3"   ></th>';
 			
-			$totalLine['totalAmountObjectif']       .= '<th class="border-left-heavy border-top-heavy" colspan="3"   ></th>';
-			$totalLine['totalAmountObjectifCumul']  .= '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3"  ></th>';
+			$totalLine['totalAmountObjectifCumul']  .= '<th class="border-left-heavy border-top-heavy"  style="text-align:center;" colspan="3"  ></th>';
 			$totalLine['totalObjectifPercentCumul']       .= '<th class="border-left-heavy border-top-light" colspan="3"   ></th>';
+			$totalLine['totalDiffCumul']       .= '<th class="border-left-heavy border-top-light" colspan="3"   ></th>';
 			
 			
 			print $totalLine['total']."</tr>";
 			print $totalLine['totalCumule']."</tr>";
+			
 			print $totalLine['totalAmountObjectif']."</tr>";
-			print $totalLine['totalAmountObjectifCumul']."</tr>";
-			
-			
-			
+			print $totalLine['totalDiff']."</tr>";
 			print $totalLine['totalObjectifPercent']."</tr>";
 			
+			
+			print $totalLine['totalAmountObjectifCumul']."</tr>";
+			print $totalLine['totalDiffCumul']."</tr>";
 			print $totalLine['totalObjectifPercentCumul']."</tr>";
 			
 			
