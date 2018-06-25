@@ -76,16 +76,16 @@ div.period {
 	position:relative;
 }
 
-td.goal-danger{
-	backround: #ffb2b2 !important;
+td.goal-danger, th.goal-danger{
+	background: #ffb2b2 !important;
 }
-td.goal-warning{
-	backround: #ffe4b2 !important;
+td.goal-warning, th.goal-warning{
+	background: #ffe4b2 !important;
 }
-td.goal-idle{
-	/*backround: #ffb2b2 !important;*/
+td.goal-idle, th.goal-idle{
+	/*background: #ffb2b2 !important;*/
 }
-td.goal-success{
-	backround: #c8ffb2 !important;
+td.goal-success, th.goal-success{
+	background: #c8ffb2 !important;
 }
 

@@ -453,12 +453,12 @@
 			    
 			    
 			    $followupGoal = followupGoal::getAmount ($idUser, date('Y', $dateInfos->time) , date('m', $dateInfos->time));
-			    
-			    $totalLine['totalObjectifPercent'].= '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3" >';
+			    $goalRatio = calcRatio($dateInfos->totalSigned, $followupGoal) ;
+			    $totalLine['totalObjectifPercent'].= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
 			    $totalLine['totalObjectifPercent'].= _getGoalField($idUser,$dateInfos,$followupGoal,0,1);
 			    $totalLine['totalObjectifPercent'].= '</th>';
 			    
-			    $totalLine['totalAmountObjectif'].= '<th class="border-left-heavy border-top-heavy"  style="text-align:center;" colspan="3" >';
+			    $totalLine['totalAmountObjectif'].= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
 			    $totalLine['totalAmountObjectif'].= _getGoalField($idUser,$dateInfos,$followupGoal,1,0);
 			    $totalLine['totalAmountObjectif'].= '</th>';
 			    
@@ -474,14 +474,15 @@
 			    
 			    // CUMUL 
 			    
-			    $totalLine['totalAmountObjectifCumul'].= '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3" >';
+			    $goalRatio = calcRatio($global_totalSigned, $global_followupGoal) ;
+			    
+			    $totalLine['totalAmountObjectifCumul'].= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
 			    $totalLine['totalAmountObjectifCumul'].= displayAmount($global_followupGoal);
 			    $totalLine['totalAmountObjectifCumul'].= '</th>';
 			    
 			    
-			    $totalLine['totalObjectifPercentCumul'].= '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3" >';
-			    $goalRatio = calcRatio($global_totalSigned, $global_followupGoal) ;
 			    $goalRatioDetails = $langs->trans('Goal').': '.displayAmount($global_totalSigned) .' / '. displayAmount($global_followupGoal) .' = '.$goalRatio;
+			    $totalLine['totalObjectifPercentCumul'].= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3" >';
 			    $totalLine['totalObjectifPercentCumul'].=  '<div class="goalResume" >'.$form->textwithtooltip($goalRatio.'%', $goalRatioDetails, 3).'</div>';
 			    $totalLine['totalObjectifPercentCumul'].= '</th>';
 			}
@@ -509,7 +510,7 @@
 
 			
 			
-			$totalLine['totalObjectifPercent'].=   '<th class="border-left-heavy border-top-light"  style="text-align:center;" colspan="3"  >';
+			$totalLine['totalObjectifPercent'].=   '<th class="border-left-heavy border-top-light '.percentClass($goalRatio ).'"  style="text-align:center;" colspan="3"  >';
 			
 			if(!empty($followupGoal)){
 			    $goalRatio = calcRatio($global_totalSigned, $global_followupGoal) ;
@@ -851,6 +852,7 @@
 	    print "});";
 	    
 	   print '}); </script>';
+	   
 	}
 	
 	function _getGoalField($idUser,$dateInfos,$followupGoal,$addForm = 1,$ratio=0){
