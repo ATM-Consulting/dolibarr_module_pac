@@ -3,7 +3,7 @@
 /*
  * Class objectif du suivit commercial
  */
-class followupGoal{
+class followupGoal extends  CommonObject{
     
     public $element='followup_goal';
     public $table_element='followup_goal';
@@ -53,30 +53,58 @@ class followupGoal{
     }
     
     
-    function save()
+    function save($user,$notrigger=0)
     {
-        global $user;
+        
+        if(!empty($this->id)){
+            return $this->update($user);
+        } else {
+            return $this->create($user);
+        }
+        
+        return 0;
+    }
+    
+    function create($user,$notrigger=0)
+    {
+        if($this->userSaveRight())
+        {
+            $sql = "SELECT MAX(rowid) FROM ".MAIN_DB_PREFIX.$this->table_element ;
+            $res = $this->db->query($sql);
+            $last_id = $this->db->fetch_array($res);
+            $last_id = $last_id[0]+1;
+            $sql = "INSERT INTO ".MAIN_DB_PREFIX.$this->table_element;
+            $sql .= " (rowid,fk_user,fk_cat,year,month,amount)  VALUES  (";
+            $sql .= " ".$last_id.",".intval($this->fk_user).",".intval($this->fk_cat).",".intval($this->year).",".intval($this->month).",".(!empty($this->amount)?intval($this->amount):'NULL').")";
+        
+            $this->lastSql = $sql;
+            $res = $this->db->query($sql);
+            if(!empty($res )){
+                return $last_id;
+            } else {
+                return -1;
+            }
+        }
+        
+        return 0;
+        
+    }
+    
+    function update($user,$notrigger=0)
+    {
         
         if($this->userSaveRight())
         {
-            if(!empty($this->id)){
-                $sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element." SET  ";
-                $sql .= " fk_user=".intval($this->fk_user) ;
-                $sql .= ", fk_cat=".intval($this->fk_cat) ;
-                $sql .= ", year=".intval($this->year);
-                $sql .= ", month=".intval($this->month);
-                $sql .= ", amount=".intval($this->amount);
-                $sql .= " WHERE rowid=".$this->id ;
+            
+            $sql = "UPDATE ".MAIN_DB_PREFIX.$this->table_element." SET  ";
+            $sql .= " fk_user=".intval($this->fk_user) ;
+            $sql .= ", fk_cat=".intval($this->fk_cat) ;
+            $sql .= ", year=".intval($this->year);
+            $sql .= ", month=".intval($this->month);
+            $sql .= ", amount=".intval($this->amount);
+            $sql .= " WHERE rowid=".$this->id ;
+       
                 
-            } else {
-                $sql = "SELECT MAX(rowid) FROM ".MAIN_DB_PREFIX.$this->table_element ;
-                $res = $this->db->query($sql);
-                $last_id = $this->db->fetch_array($res);
-                $last_id = $last_id[0]+1;
-                $sql = "INSERT INTO ".MAIN_DB_PREFIX.$this->table_element;
-                $sql .= " (rowid,fk_user,fk_cat,year,month,amount)  VALUES  (";
-                $sql .= " ".$last_id.",".intval($this->fk_user).",".intval($this->fk_cat).",".intval($this->year).",".intval($this->month).",".(!empty($this->amount)?intval($this->amount):'NULL').")";
-            }
             $this->lastSql = $sql;
             $res = $this->db->query($sql);
             if(!empty($res )){
@@ -88,6 +116,7 @@ class followupGoal{
         
         return 0;
     }
+    
     
     /**
      * Function fetchFromOrderDet

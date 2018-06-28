@@ -32,7 +32,7 @@
 	    $followupGoal->year = $y;
 	    $followupGoal->month = $m;
 	    $followupGoal->amount = $amount;
-	    if($followupGoal->save()>0){
+	    if($followupGoal->save($user)>0){
 	        setEventMessage($langs->trans('Saved'));
 	    }
 	    else {
