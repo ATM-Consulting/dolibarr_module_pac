@@ -371,7 +371,7 @@
 			    
 			    print '<td class="border-left-heavy sector_totalRealised"  style="text-align:right;" >'.displayAmount($sector_totalRealised).'</td>';
 			    print '<td class="border-left-light sector_totalSigned"  style="text-align:right;" >'.displayAmount($sector_totalSigned).'</td>';
-			    print '<td class="border-left-light sector_transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(displayAmount($sector_transformationRatio).'%', $ratioDetails, 3).'</td>';
+			    print '<td class="border-left-light sector_transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(price($sector_transformationRatio).'%', $ratioDetails, 3).'</td>';
 			    print '</tr>';
 			    
 			}
