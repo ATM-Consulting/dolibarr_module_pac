@@ -351,7 +351,7 @@ div.rotate90 {
 				$TEvent[$fk_user]['@']['propal']['validated']++;
 				$TEvent[$fk_user]['@']['propal']['amount_validated']+=$line->amount;
 				$TEvent[$fk_user]['@']['propal']['validated_ref'][]=$line->ref;
-				$TEvent[$fk_user]['@']['propal']['validated_refs'] = implode(', ', $TEvent[$fk_user]['propal']['validated_ref']);
+				$TEvent[$fk_user]['@']['propal']['validated_refs'] = empty($TEvent[$fk_user]['propal']['validated_ref']) ? '' :implode(', ', $TEvent[$fk_user]['propal']['validated_ref']);
 			}
 
 		}
@@ -370,7 +370,7 @@ div.rotate90 {
 				$TEvent[$fk_user]['@']['propal']['signed']++;
 				$TEvent[$fk_user]['@']['propal']['amount_signed']+=$line->amount;
 				$TEvent[$fk_user]['@']['propal']['signed_ref'][]=$line->ref;
-				$TEvent[$fk_user]['@']['propal']['signed_refs'] = implode(', ', $TEvent[$fk_user]['propal']['signed_ref']);
+				$TEvent[$fk_user]['@']['propal']['signed_refs'] = empty($TEvent[$fk_user]['propal']['signed_ref']) ? '' : implode(', ', $TEvent[$fk_user]['propal']['signed_ref']);
 
 			}
 		}
