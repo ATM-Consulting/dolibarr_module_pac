@@ -71,7 +71,40 @@ function _get_propales($iduser, $date_deb, $date_fin) {
     // - Toutes les propales non signée (fk_statut = 3) sur date_cloture (ou date_signature à revoir)
     _get_propales_query($TData, $catLists, $iduser, $date_deb, $date_fin, 'allNotSigned');
 
+    _get_CA_facture($TData, $iduser, $date_deb, $date_fin);
+
     return $TData;
+}
+
+function _get_CA_facture(&$TRes, $fk_user, $start, $end) {
+    global $db;
+
+    $sql = 'SELECT month(f.datef) AS mois, year(f.datef) AS annee, sum(f.total) AS sum_total';
+    $sql.= ' FROM '.MAIN_DB_PREFIX.'facture f';
+    $sql.= ' INNER JOIN '.MAIN_DB_PREFIX."element_element ee ON (ee.targettype='facture' AND ee.fk_target=f.rowid AND ee.sourcetype='commande')";
+    $sql.= ' INNER JOIN '.MAIN_DB_PREFIX.'commande_extrafields ce ON ee.fk_source=ce.fk_object';
+    $sql.= ' INNER JOIN '.MAIN_DB_PREFIX."c_order_type ot ON (ce.order_type=ot.rowid AND ot.code='projet')";
+    $sql.= ' INNER JOIN '.MAIN_DB_PREFIX."element_element ee1 ON (ee1.targettype='commande' AND ee1.fk_target=ce.fk_object AND ee1.sourcetype='propal')";
+    if($fk_user > 0) $sql.= ' INNER JOIN llx_element_contact ec ON (ec.element_id=ee1.fk_source AND ec.fk_c_type_contact=31 AND ec.fk_socpeople='.$fk_user.')';
+    $sql.= " WHERE f.datef BETWEEN '".$start."' AND '".$end."'";
+    $sql.= ' GROUP BY mois, annee';
+
+    $resql = $db->query($sql);
+    if(! $resql) {
+        dol_print_error($db);
+        exit;
+    }
+
+    $total = 0;
+    while($obj = $db->fetch_object($resql)) {
+        $index = $obj->annee.'-'.$obj->mois;
+        $data = $TRes['dates'][$index];
+        $data->facture = new stdClass();
+
+        $data->facture->total = $obj->sum_total;
+        $total += $obj->sum_total;
+        $data->facture->cumul = $total;
+    }
 }
 
 function prepareTDataFromSql($sql, &$TData, $type, $forceNull = false) {
@@ -347,6 +380,15 @@ function _print_rapport() {
     $totalLine['totalObjectifPercentCumul'] = '<!-- totalObjectifPercentCumul --><tr class="oddeven">';
     $totalLine['totalObjectifPercentCumul'] .= '<th style="text-align: right; z-index: 10;" class="border-top-light">'.$langs->trans('totalObjectifPercentCumul').'</th>';
 
+    $totalLine['totalCAFacture'] = '<tr class="oddeven">';
+    $totalLine['totalCAFacture'] .= '<th style="text-align: right; z-index: 10;" class="border-top-heavy">'.$langs->trans('CAFacture').'</th>';
+
+    $totalLine['totalCAFactureCumule'] = '<tr class="oddeven">';
+    $totalLine['totalCAFactureCumule'] .= '<th style="text-align: right; z-index: 10;" class="border-top-light">'.$langs->trans('CAFactureCumule').'</th>';
+
+    $totalLine['totalCAFactureCumulePercent'] = '<tr class="oddeven">';
+    $totalLine['totalCAFactureCumulePercent'] .= '<th style="text-align: right; z-index: 10;" class="border-top-light">'.$langs->trans('CAFactureCumulePercent').'</th>';
+
     $global_totalRealised = 0;
     $global_nbRealised = 0;
     $global_totalSigned = 0;
@@ -410,6 +452,14 @@ function _print_rapport() {
         $totalLine['totalDiffCumul'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
         $totalLine['totalDiffCumul'] .= displayAmount($global_totalSigned - $global_followupGoal);
         $totalLine['totalDiffCumul'] .= '</th>';
+
+        $totalLine['totalCAFacture'] .= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">'.displayAmount($dateInfos->facture->total).'</th>';
+        $totalLine['totalCAFactureCumule'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">'.displayAmount($dateInfos->facture->cumul).'</th>';
+
+        $calc = $dateInfos->facture->cumul/$global_followupGoal*100;
+        $totalLine['totalCAFactureCumulePercent'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
+        $totalLine['totalCAFactureCumulePercent'] .= $form->textwithtooltip(price($calc), displayAmount($dateInfos->facture->cumul).' / '.displayAmount($global_followupGoal).' = '.price($calc).'%', 3);
+        $totalLine['totalCAFactureCumulePercent'] .= '%</th>';
     }
 
     /*****************
@@ -484,6 +534,10 @@ function _print_rapport() {
     $totalLine['totalObjectifPercentCumul'] .= '<th class="border-left-heavy border-top-light" colspan="3"></th>';
     $totalLine['totalDiffCumul'] .= '<th class="border-left-heavy border-top-light" colspan="3"></th>';
 
+    $totalLine['totalCAFacture'] .= '<th class="border-left-heavy border-top-heavy" style="text-align: center;" colspan="3"></th>';
+    $totalLine['totalCAFactureCumule'] .= '<th class="border-left-heavy border-top-light" colspan="3"></th>';
+    $totalLine['totalCAFactureCumulePercent'] .= '<th class="border-left-heavy border-top-light" colspan="3"></th>';
+
     print $totalLine['total']."</tr>";
     print $totalLine['totalCumule']."</tr>";
 
@@ -494,6 +548,10 @@ function _print_rapport() {
     print $totalLine['totalAmountObjectifCumul']."</tr>";
     print $totalLine['totalDiffCumul']."</tr>";
     print $totalLine['totalObjectifPercentCumul']."</tr>";
+
+    print $totalLine['totalCAFacture']."</tr>";
+    print $totalLine['totalCAFactureCumule']."</tr>";
+    print $totalLine['totalCAFactureCumulePercent']."</tr>";
 
     print '</tfoot>';
     print '</table></div></div>';

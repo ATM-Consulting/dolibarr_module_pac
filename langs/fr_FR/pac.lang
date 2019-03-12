@@ -56,3 +56,6 @@ totalObjectifPercentCumul=%% Objectif cumulé
 TotalObjectifCumul=Objectif cumulé
 TotalObjectifDiff=Ecart
 TotalObjectifDiffCumul=Ecart cumulé
+CAFacture=CA Facturé
+CAFactureCumule=CA Facturé Cumulé
+CAFactureCumulePercent=%% CA Facturé
