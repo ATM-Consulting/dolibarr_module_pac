@@ -52,7 +52,7 @@ _print_rapport();
 llxFooter();
 
 function _get_propales($iduser, $date_deb, $date_fin) {
-    global $db, $sortorder, $sortfield, $conf;
+    global $sortorder, $sortfield, $conf;
     $sortfield = GETPOST('sortfield');
     $sortorder = GETPOST('sortorder');
     $TData = array();
@@ -78,7 +78,6 @@ function prepareTDataFromSql($sql, &$TData, $type, $forceNull = false) {
     global $db;
 
     $resql = $db->query($sql);
-    //print '<br><br>'.$sql;
     if($resql) {
         while($line = $db->fetch_object($resql)) {
             // dispatch results
@@ -96,7 +95,6 @@ function prepareTDataFromSql($sql, &$TData, $type, $forceNull = false) {
             $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$type] = $line; // les résultats brute
             $TData['dates'][$line->year.'-'.$line->month] = new stdClass();// liste des mois
             $TData['dates'][$line->year.'-'.$line->month]->time = $line->time; // utilisé plus tard juste poour un affichage propre des dates
-
         }
     }
 }
@@ -105,7 +103,6 @@ function prepareTDataFromSqlHorsCat($sql, &$TData, $type) {
     global $db;
 
     $resql = $db->query($sql);
-    //print '<br><br>'.$sql;
     if($resql) {
         while($line = $db->fetch_object($resql)) {
             // dispatch results
@@ -121,16 +118,11 @@ function prepareTDataFromSqlHorsCat($sql, &$TData, $type) {
             $TData['data'][$line->fk_categorie][$line->year.'-'.$line->month][$type] = $line; // les résultats brute
             $TData['dates'][$line->year.'-'.$line->month] = new stdClass();// liste des mois
             $TData['dates'][$line->year.'-'.$line->month]->time = $line->time; // utilisé plus tard juste poour un affichage propre des dates
-
         }
     }
 }
 
 function _print_filtres() {
-    global $db, $langs;
-
-    $id = (int)GETPOST('id');
-
     $Tform = new TFormCore($_SERVER["PHP_SELF"], 'formFiltres', 'GET');
     _get_filtre($Tform);
 
@@ -138,7 +130,7 @@ function _print_filtres() {
 }
 
 function _get_filtre($form) {
-    global $db, $langs;
+    global $db;
 
     $formol = new Form($db);
 
@@ -156,13 +148,15 @@ function _get_filtre($form) {
     //print $formol->selectarray('type', array('signed'=>$langs->trans('Signed'),'valid'=>$langs->trans('Validated')), GETPOST('type') );
     print '</td>';
     print '</tr>';
+
     print '<tr>';
     print '<td>Date de début : </td>';
-    print '<td><input type="month" min="month"   name="date_deb" value="'.((GETPOST('date_deb')) ? GETPOST('date_deb') : $default_date_deb).'"  /></td>';// '.$form->calendrier('', 'date_deb', (GETPOST('date_deb'))? GETPOST('date_deb') : $default_date_deb).'
+    print '<td><input type="month" min="month" name="date_deb" value="'.((GETPOST('date_deb')) ? GETPOST('date_deb') : $default_date_deb).'" /></td>';
     print '</tr>';
+
     print '<tr>';
     print '<td>Date de fin : </td>';
-    print '<td><input type="month" min="month"  name="date_fin" value="'.((GETPOST('date_fin')) ? GETPOST('date_fin') : $default_date_fin).'"  /></td>';// '.$form->calendrier('', 'date_fin', (GETPOST('date_fin'))? GETPOST('date_fin') : $default_date_fin).'</td>';
+    print '<td><input type="month" min="month" name="date_fin" value="'.((GETPOST('date_fin')) ? GETPOST('date_fin') : $default_date_fin).'" /></td>';
     print '</tr>';
 
     print '<tr><td colspan="2" align="center">'.$form->btsubmit('Valider', '').'</td></tr>';
@@ -172,7 +166,7 @@ function _get_filtre($form) {
 }
 
 function _print_rapport() {
-    global $db, $langs, $sortorder, $sortfield, $form, $user;
+    global $db, $langs, $form;
 
     $idUser = GETPOST('userid', 'int');
     if($idUser < 1) {
@@ -186,10 +180,6 @@ function _print_rapport() {
     if(GETPOST('date_deb') == '') $date_deb = date('Y-m-01', strtotime(date('Y-m-01')) - (60 * 60 * 24 * 30));
     if(GETPOST('date_fin') == '') $date_fin = date('Y-m-t');
 
-    /*$dateSignaturesearchField = 'search_options_'.'date_signature' ;
-    $param = '&search_month='.date('m',strtotime($date_deb)).'&search_year='.date('Y',strtotime($date_deb)).$dateSignaturesearchField.'=';
-    $listLink = dol_buildpath('comm/propal/list.php', 2) . '?formfilteraction=list&action=list&sortfield=p.ref&sortorder=desc'.$param;*/
-
     $TData = _get_propales($idUser, $date_deb, $date_fin);
 
     if(empty($TData)) return;
@@ -202,27 +192,27 @@ function _print_rapport() {
     // TABLE HEAD
     print '<thead>';
     print '<tr class="liste_titre">';
-    print '<th ></th>';
+    print '<th></th>';
     foreach($TData['dates'] as $dateInfos) {
-        print '<th colspan="3"  class="border-left-heavy"  style="text-align:center;" >'.dol_print_date($dateInfos->time, '%B %Y').'</th>';
+        print '<th colspan="3" class="border-left-heavy" style="text-align: center;">'.dol_print_date($dateInfos->time, '%B %Y').'</th>';
     }
-    print '<th colspan="3"  class="border-left-heavy" style="text-align:center;" >'.$langs->trans('Total').'</th>';
-    print "</tr>";
+    print '<th colspan="3" class="border-left-heavy" style="text-align: center;">'.$langs->trans('Total').'</th>';
+    print '</tr>';
 
     print '<tr class="liste_titre">';
-    print '<th class="cellMinWidth" style="z-index:10" >';
+    print '<th class="cellMinWidth" style="z-index: 10">';
     _printParentCat();
     print '</th>';
 
     foreach($TData['dates'] as $dateInfos) {
-        print '<th class="border-left-heavy cellMinWidth"  style="text-align:center;" >'.$langs->trans('Realized').'</th>';
-        print '<th class="border-left-light cellMinWidth"  style="text-align:center;" >'.$langs->trans('Signed').'</th>';
-        print '<th class="border-left-light cellMinWidth"  style="text-align:center;" >'.$langs->trans('TransformationRatio').'</th>';
+        print '<th class="border-left-heavy cellMinWidth" style="text-align: center;">'.$langs->trans('Realized').'</th>';
+        print '<th class="border-left-light cellMinWidth" style="text-align: center;">'.$langs->trans('Signed').'</th>';
+        print '<th class="border-left-light cellMinWidth" style="text-align: center;">'.$langs->trans('TransformationRatio').'</th>';
     }
 
-    print '<th class="border-left-heavy cellMinWidth"  style="text-align:center;" >'.$langs->trans('Realized').'</th>';
-    print '<th class="border-left-light cellMinWidth"  style="text-align:center;" >'.$langs->trans('Signed').'</th>';
-    print '<th class="border-left-light cellMinWidth"  style="text-align:center;" >'.$langs->trans('TransformationRatio').'</th>';
+    print '<th class="border-left-heavy cellMinWidth" style="text-align: center;">'.$langs->trans('Realized').'</th>';
+    print '<th class="border-left-light cellMinWidth" style="text-align: center;">'.$langs->trans('Signed').'</th>';
+    print '<th class="border-left-light cellMinWidth" style="text-align: center;">'.$langs->trans('TransformationRatio').'</th>';
     print "</tr>";
     print '</thead>';
 
@@ -236,7 +226,7 @@ function _print_rapport() {
             $catLabel = $categorie->label;
         }
         print '<tr class="oddeven">';
-        print '<th style="text-align:left;"  >'.$catLabel.'</th>';
+        print '<th style="text-align: left;">'.$catLabel.'</th>';
 
         $sector_totalRealised = 0;
         $sector_nbRealised = 0;
@@ -257,8 +247,6 @@ function _print_rapport() {
             $totalNotSigned = 0;
             $nbNotSigned = 0;
 
-            $transformationRatio = 0;
-
             // AFFECTATION DES TOTAUX AUX DATES
             if(! empty($data[$dateKey])) {
                 foreach($data[$dateKey] as $type => $object) {
@@ -272,7 +260,6 @@ function _print_rapport() {
                         $nbSigned += $object->totalcount;
                     }
                     else if($type == 'allNotSigned') {
-
                         $totalNotSigned += $object->total_ht;
                         $nbNotSigned += $object->totalcount;
                     }
@@ -287,11 +274,10 @@ function _print_rapport() {
             // taux de transformation qty
             $ratioDetails .= '<br/>'.$langs->trans('Number').' : '.$nbSigned.' '.$langs->trans('Signed').' / ('.$nbSigned.' '.$langs->trans('Signed').' + '.$nbNotSigned.' '.$langs->trans('NotSigned').')';
             $ratioDetails .= ' = '.calcRatio($nbSigned, $nbSigned + $nbNotSigned).'%';
-            //$transformationRatio = calcRatio($nbSigned, $nbSigned + $nbNotSigned);
 
-            print '<td class="border-left-heavy totalRealised"  style="text-align:right;" >'.displayAmount($totalRealised).'</td>'; //<a target="_blank" href="'.$listLink.'" >'.displayAmount($totalRealised).'</a>
-            print '<td class="border-left-light totalSigned"  style="text-align:right;" >'.displayAmount($totalSigned).'</td>'; // <a href="'.$listLink.'&propal_statut=2,3,4" >'.displayAmount($totalSigned).'</a>
-            print '<td class="border-left-light transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(price($transformationRatio).'%', $ratioDetails, 3).'</td>';
+            print '<td class="border-left-heavy totalRealised" style="text-align: right;">'.displayAmount($totalRealised).'</td>'; //<a target="_blank" href="'.$listLink.'" >'.displayAmount($totalRealised).'</a>
+            print '<td class="border-left-light totalSigned" style="text-align: right;">'.displayAmount($totalSigned).'</td>'; // <a href="'.$listLink.'&propal_statut=2,3,4" >'.displayAmount($totalSigned).'</a>
+            print '<td class="border-left-light transformationRatio" style="text-align: right;">'.$form->textwithtooltip(price($transformationRatio).'%', $ratioDetails, 3).'</td>';
 
             // Mise à jour des totaux secteur (ligne)
             $sector_totalRealised += $totalRealised;
@@ -322,11 +308,10 @@ function _print_rapport() {
         // taux de transformation qty
         $ratioDetails .= '<br/>'.$langs->trans('Number').' : '.$langs->trans('Signed').' / ('.$sector_nbSigned.' '.$langs->trans('Signed').' + '.$sector_nbNotSigned.' '.$langs->trans('NotSigned').')';
         $ratioDetails .= ' = '.calcRatio($sector_nbSigned, $sector_nbSigned + $sector_nbNotSigned).'%';
-        //$transformationRatio = calcRatio($sector_nbSigned, $sector_nbSigned + $sector_nbNotSigned);
 
-        print '<td class="border-left-heavy sector_totalRealised"  style="text-align:right;" >'.displayAmount($sector_totalRealised).'</td>';
-        print '<td class="border-left-light sector_totalSigned"  style="text-align:right;" >'.displayAmount($sector_totalSigned).'</td>';
-        print '<td class="border-left-light sector_transformationRatio"  style="text-align:right;" >'.$form->textwithtooltip(price($sector_transformationRatio).'%', $ratioDetails, 3).'</td>';
+        print '<td class="border-left-heavy sector_totalRealised" style="text-align: right;">'.displayAmount($sector_totalRealised).'</td>';
+        print '<td class="border-left-light sector_totalSigned" style="text-align: right;">'.displayAmount($sector_totalSigned).'</td>';
+        print '<td class="border-left-light sector_transformationRatio" style="text-align: right;">'.$form->textwithtooltip(price($sector_transformationRatio).'%', $ratioDetails, 3).'</td>';
         print '</tr>';
     }
     print '</tbody>';
@@ -368,7 +353,7 @@ function _print_rapport() {
     $global_nbSigned = 0;
     $global_totalNotSigned = 0;
     $global_nbNotSigned = 0;
-    $global_goalSigned = 0;
+    $global_followupGoal = 0;
 
     foreach($TData['dates'] as $dateKey => $dateInfos) {
         // taux de transformation montant
@@ -381,11 +366,11 @@ function _print_rapport() {
         $ratioDetails .= ' = '.calcRatio($dateInfos->nbSigned, $dateInfos->nbSigned + $dateInfos->nbNotSigned).'%';
         //$dateInfos->transformationRatio = calcRatio($dateInfos->nbSigned, $dateInfos->nbSigned + $dateInfos->nbNotSigned);
 
-        $totalLine['total'] .= '<th class="border-left-heavy  border-top-heavy"  style="text-align:right;" >'.displayAmount($dateInfos->totalRealised).'</th>';
-        $totalLine['total'] .= '<th class="border-left-light border-top-heavy"  style="text-align:right;" >'.displayAmount($dateInfos->totalSigned);
+        $totalLine['total'] .= '<th class="border-left-heavy border-top-heavy" style="text-align: right;">'.displayAmount($dateInfos->totalRealised).'</th>';
+        $totalLine['total'] .= '<th class="border-left-light border-top-heavy" style="text-align: right;">'.displayAmount($dateInfos->totalSigned);
         $totalLine['total'] .= '</th>';
 
-        $totalLine['total'] .= '<th class="border-left-light border-top-heavy"  style="text-align:right;" >'.$form->textwithtooltip(price($dateInfos->transformationRatio).'%', $ratioDetails, 3).'</th>';
+        $totalLine['total'] .= '<th class="border-left-light border-top-heavy" style="text-align: right;">'.$form->textwithtooltip(price($dateInfos->transformationRatio).'%', $ratioDetails, 3).'</th>';
 
         $followupGoal = followupGoal::getAmount($idUser, date('Y', $dateInfos->time), date('m', $dateInfos->time));
         $goalRatio = calcRatio($dateInfos->totalSigned, $followupGoal);
@@ -413,16 +398,16 @@ function _print_rapport() {
 
         $goalRatio = calcRatio($global_totalSigned, $global_followupGoal);
 
-        $totalLine['totalAmountObjectifCumul'] .= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio).'"  style="text-align:center;" colspan="3" >';
+        $totalLine['totalAmountObjectifCumul'] .= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
         $totalLine['totalAmountObjectifCumul'] .= displayAmount($global_followupGoal);
         $totalLine['totalAmountObjectifCumul'] .= '</th>';
 
         $goalRatioDetails = $langs->trans('Goal').': '.displayAmount($global_totalSigned).' / '.displayAmount($global_followupGoal).' = '.$goalRatio;
-        $totalLine['totalObjectifPercentCumul'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'"  style="text-align:center;" colspan="3" >';
-        $totalLine['totalObjectifPercentCumul'] .= '<div class="goalResume" >'.$form->textwithtooltip($goalRatio.'%', $goalRatioDetails, 3).'</div>';
+        $totalLine['totalObjectifPercentCumul'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
+        $totalLine['totalObjectifPercentCumul'] .= '<div class="goalResume">'.$form->textwithtooltip($goalRatio.'%', $goalRatioDetails, 3).'</div>';
         $totalLine['totalObjectifPercentCumul'] .= '</th>';
 
-        $totalLine['totalDiffCumul'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'"  style="text-align:center;" colspan="3" >';
+        $totalLine['totalDiffCumul'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
         $totalLine['totalDiffCumul'] .= displayAmount($global_totalSigned - $global_followupGoal);
         $totalLine['totalDiffCumul'] .= '</th>';
     }
@@ -441,11 +426,11 @@ function _print_rapport() {
     $ratioDetails .= ' = '.calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned).'%';
     //$$global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 
-    $totalLine['total'] .= '<th class="border-left-heavy  border-top-heavy"  style="text-align:right;" >'.displayAmount($global_totalRealised).'</th>';
-    $totalLine['total'] .= '<th class="border-left-light  border-top-heavy"  style="text-align:right;" >'.displayAmount($global_totalSigned).'</th>';
-    $totalLine['total'] .= '<th class="border-left-light border-top-heavy"  style="text-align:right;"  >'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
+    $totalLine['total'] .= '<th class="border-left-heavy border-top-heavy" style="text-align: right;">'.displayAmount($global_totalRealised).'</th>';
+    $totalLine['total'] .= '<th class="border-left-light border-top-heavy" style="text-align: right;">'.displayAmount($global_totalSigned).'</th>';
+    $totalLine['total'] .= '<th class="border-left-light border-top-heavy" style="text-align: right;">'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
 
-    $totalLine['totalObjectifPercent'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'"  style="text-align:center;" colspan="3"  >';
+    $totalLine['totalObjectifPercent'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
 
     if(! empty($followupGoal)) {
         $goalRatio = calcRatio($global_totalSigned, $global_followupGoal);
@@ -454,11 +439,11 @@ function _print_rapport() {
     }
     $totalLine['totalObjectifPercent'] .= '</th>';
 
-    $totalLine['totalAmountObjectif'] .= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio).'"  style="text-align:center;" colspan="3" >';
+    $totalLine['totalAmountObjectif'] .= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
     $totalLine['totalAmountObjectif'] .= displayAmount($global_followupGoal);
     $totalLine['totalAmountObjectif'] .= '</th>';
 
-    $totalLine['totalDiff'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'"  style="text-align:center;" colspan="3" >';
+    $totalLine['totalDiff'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
     $totalLine['totalDiff'] .= displayAmount($global_totalSigned - $global_followupGoal);
     $totalLine['totalDiff'] .= '</th>';
 
@@ -478,7 +463,6 @@ function _print_rapport() {
         $global_nbSigned += $dateInfos->nbSigned;
         $global_totalNotSigned += $dateInfos->totalNotSigned;
         $global_nbNotSigned += $dateInfos->nbNotSigned;
-        $global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 
         // taux de transformation montant
         $ratioDetails = $langs->trans('Amount').' : '.displayAmount($global_totalSigned).' '.$langs->trans('Signed').' / ('.displayAmount($global_totalSigned).' '.$langs->trans('Signed').' + '.displayAmount($global_totalNotSigned).' '.$langs->trans('NotSigned').')';
@@ -488,18 +472,17 @@ function _print_rapport() {
         // taux de transformation qty
         $ratioDetails .= '<br/>'.$langs->trans('Number').' : '.$langs->trans('Signed').' / ('.$global_nbSigned.' '.$langs->trans('Signed').' + '.$global_nbNotSigned.' '.$langs->trans('NotSigned').')';
         $ratioDetails .= ' = '.calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned).'%';
-        //$$global_transformationRatio = calcRatio($global_nbSigned, $global_nbSigned + $global_nbNotSigned);
 
-        $totalLine['totalCumule'] .= '<th class="border-left-heavy border-top-light"  style="text-align:right;" >'.displayAmount($global_totalRealised).'</th>';
-        $totalLine['totalCumule'] .= '<th class="border-left-light border-top-light"  style="text-align:right;" >'.displayAmount($global_totalSigned).'</th>';
-        $totalLine['totalCumule'] .= '<th class="border-left-light border-top-light"  style="text-align:right;" >'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
+        $totalLine['totalCumule'] .= '<th class="border-left-heavy border-top-light" style="text-align: right;">'.displayAmount($global_totalRealised).'</th>';
+        $totalLine['totalCumule'] .= '<th class="border-left-light border-top-light" style="text-align: right;">'.displayAmount($global_totalSigned).'</th>';
+        $totalLine['totalCumule'] .= '<th class="border-left-light border-top-light" style="text-align: right;">'.$form->textwithtooltip(price($global_transformationRatio).'%', $ratioDetails, 3).'</th>';
     }
 
-    $totalLine['totalCumule'] .= '<th class="border-left-heavy border-top-light" colspan="3"   ></th>';
+    $totalLine['totalCumule'] .= '<th class="border-left-heavy border-top-light" colspan="3"></th>';
 
-    $totalLine['totalAmountObjectifCumul'] .= '<th class="border-left-heavy border-top-heavy"  style="text-align:center;" colspan="3"  ></th>';
-    $totalLine['totalObjectifPercentCumul'] .= '<th class="border-left-heavy border-top-light" colspan="3"   ></th>';
-    $totalLine['totalDiffCumul'] .= '<th class="border-left-heavy border-top-light" colspan="3"   ></th>';
+    $totalLine['totalAmountObjectifCumul'] .= '<th class="border-left-heavy border-top-heavy" style="text-align: center;" colspan="3"></th>';
+    $totalLine['totalObjectifPercentCumul'] .= '<th class="border-left-heavy border-top-light" colspan="3"></th>';
+    $totalLine['totalDiffCumul'] .= '<th class="border-left-heavy border-top-light" colspan="3"></th>';
 
     print $totalLine['total']."</tr>";
     print $totalLine['totalCumule']."</tr>";
@@ -680,26 +663,23 @@ function getCategoryChild($cat, $deep = 0, $returnObject = 0, $sort = 0) {
 }
 
 function _get_propales_query(&$TData, $catLists, $iduser, $date_deb, $date_fin, $type = 'all') {
-    global $db, $conf;
-    //$conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT = 0;
-
-    // $date_deb = $date_fin = "2018-06-18";
+    global $conf;
 
     // A mon avis il faut 3 requête avec un UNION :
     if($type == 'all') {
         // - Toutes les propales (fk_statut > 0) sur datep
         $date_field = 'p.datep';
-        $sqlStatus = ' AND p.fk_statut > 0 ';
+        $sqlStatus = ' AND p.fk_statut > 0';
     }
     else if($type == 'allSigned') {
         // - Toutes les propales signée (fk_statut IN (2,4)) sur date_cloture (ou date_signature à revoir)
-        $date_field = '  COALESCE(NULLIF(pex.date_signature,\'\'), p.date_cloture) ';
-        $sqlStatus = ' AND p.fk_statut IN (2,4) ';
+        $date_field = 'COALESCE(NULLIF(pex.date_signature,\'\'), p.date_cloture) ';
+        $sqlStatus = ' AND p.fk_statut IN (2,4)';
     }
     else if($type == 'allNotSigned') {
         // - Toutes les propales non signée (fk_statut = 3) sur date_cloture (ou date_signature à revoir)
         $date_field = 'p.date_cloture';
-        $sqlStatus = ' AND p.fk_statut = 3 ';
+        $sqlStatus = ' AND p.fk_statut = 3';
     }
     else {
         return false;
@@ -718,28 +698,29 @@ function _get_propales_query(&$TData, $catLists, $iduser, $date_deb, $date_fin, 
     $sqlJoin = ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'propal_extrafields pex ON (pex.fk_object = p.rowid)';
     if($iduser > 0) $sqlJoin .= ' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'element_contact ec ON (ec.element_id = p.rowid)';
 
-    $sqlWhere = ' WHERE 1 ';
+    $sqlWhere = ' WHERE 1';
 
     if($iduser > 0) $sqlWhere .= ' AND ec.fk_c_type_contact = 31 AND ec.fk_socpeople = '.$iduser;
 
-    $sqlWhere .= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'") ';
+    $sqlWhere .= ' AND ('.$date_field.' BETWEEN "'.$date_deb.'" AND "'.$date_fin.'")';
 
     $sqlWhere .= $sqlStatus;
 
-    $sqlGroup = ' GROUP BY ';
-    $sqlGroup .= ' MONTH('.$date_field.'), YEAR('.$date_field.') ';
+    $sqlCatFilter = '';
 
-    $sqlOrder .= ' ORDER BY '.$date_field.' ASC';
+    $sqlGroup = ' GROUP BY MONTH('.$date_field.'), YEAR('.$date_field.')';
+
+    $sqlOrder = ' ORDER BY month, year ASC';
 
     // prepare with parent cat
     if(! empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT) && ! empty($catLists)) {
 
-        $sql = $sqlSelect.' , cs.fk_categorie fk_categorie ';
+        $sql = $sqlSelect.', cs.fk_categorie fk_categorie';
         $sql .= $sqlFrom;
-        $sql .= $sqlJoin.' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc) ';
+        $sql .= $sqlJoin.' LEFT OUTER JOIN '.MAIN_DB_PREFIX.'categorie_societe cs ON (cs.fk_soc = p.fk_soc)';
         $sql .= $sqlWhere;
-        $sql .= $sqlCatFilter.' AND cs.fk_categorie IN ('.implode(',', $catLists).') ';
-        $sql .= $sqlGroup.' , cs.fk_categorie  ';
+        $sql .= $sqlCatFilter.' AND cs.fk_categorie IN ('.implode(',', $catLists).')';
+        $sql .= $sqlGroup.', cs.fk_categorie';
         $sql .= $sqlOrder;
     }
     else {
@@ -755,7 +736,7 @@ function _get_propales_query(&$TData, $catLists, $iduser, $date_deb, $date_fin, 
         $sql .= $sqlFrom;
         $sql .= $sqlJoin;
         $sql .= $sqlWhere;
-        $sql .= $sqlCatFilter.' AND p.fk_soc NOT IN (SELECT sqcs.fk_soc FROM  '.MAIN_DB_PREFIX.'categorie_societe sqcs WHERE  sqcs.fk_categorie IN ('.implode(',', $catLists).') )';
+        $sql .= $sqlCatFilter.' AND p.fk_soc NOT IN (SELECT sqcs.fk_soc FROM '.MAIN_DB_PREFIX.'categorie_societe sqcs WHERE sqcs.fk_categorie IN ('.implode(',', $catLists).'))';
         $sql .= $sqlGroup;
         $sql .= $sqlOrder;
 
@@ -770,7 +751,7 @@ function printGoalJs() {
 
     print '<script src="'.dol_buildpath('/pac/js/fixed_table.min.js', 2).'"></script>';
 
-    print '<script type="text/javascript" >$( document ).ready(function() { ';
+    print '<script type="text/javascript" >$(document).ready(function() {';
 
     if(! empty($user->rights->pac->changeGoal)) {
 
@@ -836,7 +817,7 @@ function _getGoalField($idUser, $dateInfos, $followupGoal, $addForm = 1, $ratio 
         $return .= '</div>';
     }
     else {
-        $return .= '<div class="goalResume" >'.$form->textwithtooltip($html, $goalRatioDetails, 3).'</div>';
+        $return = '<div class="goalResume" >'.$form->textwithtooltip($html, $goalRatioDetails, 3).'</div>';
     }
 
     return $return;
@@ -847,7 +828,8 @@ function _printGoalField($idUser, $dateInfos, $followupGoal, $addForm = 1, $rati
 }
 
 function _printParentCat() {
-    global $db, $conf;
+    global $db, $conf, $langs;
+
     $category = new Categorie($db);
     $res = $category->fetch($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT);
     if($res > 0) {
@@ -874,8 +856,6 @@ function displayAmount($amount) {
 }
 
 function percentClass($percent) {
-    global $conf;
-
     if($percent < 80) {
         return 'goal-danger';
     }
