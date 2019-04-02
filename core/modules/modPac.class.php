@@ -345,6 +345,7 @@ class modPac extends DolibarrModules
 	 */
 	function init($options='')
 	{
+	    global $conf;
 		$sql = array();
 		
 		define('INC_FROM_DOLIBARR',true);
@@ -353,6 +354,24 @@ class modPac extends DolibarrModules
 		dol_include_once('/pac/script/create-maj-base.php');
 
 		$result=$this->_load_tables('/pac/sql/');
+
+
+        $save_entity = $conf->entity;
+        $conf->entity = 0;
+
+        // Attribut supplémentaire
+        $e=new ExtraFields($this->db);
+        $param= unserialize('a:1:{s:7:"options";a:1:{s:0:"";N;}}');
+        $label = 'Date Signature';
+        $key = 'date_signature';
+        $e->addExtraField($key, $label, 'date', 1, '', 'propal',0,0,'',$param, 1);
+
+
+
+        $conf->entity = $save_entity;
+
+
+
 
 		return $this->_init($sql, $options);
 	}
