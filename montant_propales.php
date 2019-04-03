@@ -7,7 +7,7 @@
 	dol_include_once('/comm/propal/class/propal.class.php');
 	dol_include_once('/core/class/html.form.class.php');
 
-		
+
 	
 	
 	llxHeader('',$langs->trans('MontantPropales'));
@@ -190,9 +190,14 @@
 				print '<td align="right">'.price($propal->total_ht)."</td>";
 		
 				print '<td align="center">';
-				$u = new User($db);
-				$u->fetch($data['fk_user']);
-				print $u->getLoginUrl(1);
+				if(!empty($data['fk_user'])) {
+                    $u = new User($db);
+                    $u->fetch($data['fk_user']);
+				    print $u->getLoginUrl(1);
+                }
+				else{
+				    print '--';
+                }
 				print "</td>";		
 				print '<td align="right">'.$propal->LibStatut($propal->statut, 2).'</td>';		
 				print "</tr>";
