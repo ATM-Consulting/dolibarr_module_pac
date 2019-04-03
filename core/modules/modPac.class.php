@@ -361,12 +361,20 @@ class modPac extends DolibarrModules
         $save_entity = $conf->entity;
         $conf->entity = 0;
 
-        // Attribut supplémentaire
+        // Attribut supplémentaire propal
         $e=new ExtraFields($this->db);
         $param= unserialize('a:1:{s:7:"options";a:1:{s:0:"";N;}}');
         $label = 'Date Signature';
         $key = 'date_signature';
         $e->addExtraField($key, $label, 'date', 1, '', 'propal',0,0,'',$param, 1);
+
+
+        // Attribut supplémentaire action comm
+        $e=new ExtraFields($this->db);
+        $param= unserialize('a:1:{s:7:"options";a:8:{i:101;s:21:"101 - Premier contact";i:201;s:24:"201 - RDV1 - Découverte";i:202;s:18:"202 - RDV2 - Devis";i:203;s:19:"203 - Relance devis";i:301;s:27:"301 - Suivi projet en cours";i:302;s:38:"302 - Suivi satisfaction après projet";i:303;s:18:"303 - Suivi client";i:999;s:11:"999 - Autre";}}');
+        $label = 'Étape';
+        $key = 'etape';
+        $e->addExtraField($key, $label, 'select', 0, '', 'actioncomm',0,0,'',$param, 1);
 
 
 
