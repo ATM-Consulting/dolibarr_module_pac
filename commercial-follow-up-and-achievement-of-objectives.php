@@ -199,7 +199,7 @@ function _get_filtre($form) {
 }
 
 function _print_rapport() {
-    global $db, $langs, $form;
+    global $db, $langs, $form, $conf;
 
     $idUser = GETPOST('userid', 'int');
     if($idUser < 1) {
@@ -212,6 +212,12 @@ function _print_rapport() {
 
     if(GETPOST('date_deb') == '') $date_deb = date('Y-m-01', strtotime(date('Y-m-01')) - (60 * 60 * 24 * 30));
     if(GETPOST('date_fin') == '') $date_fin = date('Y-m-t');
+
+
+    if(empty($conf->global->PAC_COMERCIAL_FOLLOWUP_PARENT_CAT)){
+        print '<div class="info" >'.$langs->trans('PAC_COMERCIAL_FOLLOWUP_PARENT_CAT_NOT_ASIGNED').'</div>';
+        return;
+    }
 
     $TData = _get_propales($idUser, $date_deb, $date_fin);
 

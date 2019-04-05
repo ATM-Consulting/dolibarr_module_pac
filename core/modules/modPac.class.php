@@ -400,6 +400,14 @@ class modPac extends DolibarrModules
         $key = 'etape';
         $e->addExtraField($key, $label, 'select', 0, '', 'actioncomm',0,0,'',$param, 1);
 
+        // Attribut supplémentaire commande
+        $e=new ExtraFields($this->db);
+        $param= unserialize('a:1:{s:7:"options";a:1:{s:18:"c_order_type:label";N;}}');
+        $label = 'Type de la commande';
+        $key = 'order_type';
+        $e->addExtraField($key, $label, 'sellist', 0, '', 'commande',0,0,'',$param, 0);
+
+
 
 
         $conf->entity = $save_entity;
