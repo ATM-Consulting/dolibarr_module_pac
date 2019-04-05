@@ -6,10 +6,3 @@ CREATE TABLE llx_followup_goal (
   month int(2) DEFAULT NULL,
   amount int(11) DEFAULT NULL
 )ENGINE=innodb;
-
---
--- Index pour la table `llx_followup_goal`
---
-ALTER TABLE `llx_followup_goal`
-  ADD UNIQUE KEY `fk_user` (`fk_cat`,`fk_user`,`year`,`month`),
-  ADD KEY `date` (`fk_cat`,`year`,`month`);
