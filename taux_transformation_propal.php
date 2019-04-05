@@ -91,6 +91,11 @@ function _get_propales_signees_commercial($date_deb, $date_fin){
 		$TPropalesSignees = _get_propales_signees_commercial($date_deb, $date_fin);
 		$TData = array_merge_recursive($TPropales,$TPropalesSignees);
 
+		if(empty($TData)){
+            print '<div class="info" >'.$langs->trans('NoDataToShow').'</div>';
+		    return;
+        }
+
 		foreach ($TData as $ouverte){
 			//var_dump($ouverte);
 
