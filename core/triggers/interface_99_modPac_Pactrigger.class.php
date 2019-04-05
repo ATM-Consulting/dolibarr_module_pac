@@ -307,6 +307,15 @@ class InterfacePactrigger
             dol_syslog(
                 "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id
             );
+
+            if(empty($object->array_options)){
+                $object->fetch_optionals();
+            }
+
+            // UPDATE DATE SIGNATURE
+            $object->array_options['options_date_signature'] = time();
+            $object->update($user, 1);
+
         } elseif ($action == 'PROPAL_CLOSE_REFUSED') {
             dol_syslog(
                 "Trigger '" . $this->name . "' for action '$action' launched by " . __FILE__ . ". id=" . $object->id

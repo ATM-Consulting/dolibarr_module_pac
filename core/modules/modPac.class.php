@@ -87,7 +87,9 @@ class modPac extends DolibarrModules
 		//							'dir' => array('output' => 'othermodulename'),      // To force the default directories names
 		//							'workflow' => array('WORKFLOW_MODULE1_YOURACTIONTYPE_MODULE2'=>array('enabled'=>'! empty($conf->module1->enabled) && ! empty($conf->module2->enabled)', 'picto'=>'yourpicto@pac')) // Set here all workflow context managed by module
 		//                        );
-		$this->module_parts = array();
+		$this->module_parts = array(
+		    'triggers' => 1
+            );
 
 		// Data directories to create when module is enabled.
 		// Example: this->dirs = array("/pac/temp");
@@ -369,6 +371,7 @@ class modPac extends DolibarrModules
 	 */
 	function init($options='')
 	{
+	    global $conf;
 		$sql = array();
 		
 		define('INC_FROM_DOLIBARR',true);
@@ -377,6 +380,32 @@ class modPac extends DolibarrModules
 		dol_include_once('/pac/script/create-maj-base.php');
 
 		$result=$this->_load_tables('/pac/sql/');
+
+
+        $save_entity = $conf->entity;
+        $conf->entity = 0;
+
+        // Attribut supplémentaire propal
+        $e=new ExtraFields($this->db);
+        $param= unserialize('a:1:{s:7:"options";a:1:{s:0:"";N;}}');
+        $label = 'Date Signature';
+        $key = 'date_signature';
+        $e->addExtraField($key, $label, 'date', 1, '', 'propal',0,0,'',$param, 1);
+
+
+        // Attribut supplémentaire action comm
+        $e=new ExtraFields($this->db);
+        $param= unserialize('a:1:{s:7:"options";a:8:{i:101;s:21:"101 - Premier contact";i:201;s:24:"201 - RDV1 - Découverte";i:202;s:18:"202 - RDV2 - Devis";i:203;s:19:"203 - Relance devis";i:301;s:27:"301 - Suivi projet en cours";i:302;s:38:"302 - Suivi satisfaction après projet";i:303;s:18:"303 - Suivi client";i:999;s:11:"999 - Autre";}}');
+        $label = 'Étape';
+        $key = 'etape';
+        $e->addExtraField($key, $label, 'select', 0, '', 'actioncomm',0,0,'',$param, 1);
+
+
+
+        $conf->entity = $save_entity;
+
+
+
 
 		return $this->_init($sql, $options);
 	}
