@@ -46,3 +46,46 @@ div.period {
 	padding:5px 5px;
 }
 
+
+.border-left-light{
+	border-left: 1px solid #666 !important;
+}
+.border-top-light{
+	border-top: 1px solid #666 !important;
+}
+.border-left-heavy {
+	border-left: 2px solid #000 !important;
+}
+
+.cellMinWidth{
+	min-width:5em;
+}
+
+.border-top-heavy{
+	border-top: 2px solid #000 !important;
+}
+
+#goalTableGlobalWrap{
+	max-width: 100%;
+	position:relative;
+	display:block;
+	margin-bottom:200px;
+}
+#goalTableWrap{
+	max-width: 100%;
+	position:relative;
+}
+
+td.goal-danger, th.goal-danger{
+	background: #ffb2b2 !important;
+}
+td.goal-warning, th.goal-warning{
+	background: #ffe4b2 !important;
+}
+td.goal-idle, th.goal-idle{
+	/*background: #ffb2b2 !important;*/
+}
+td.goal-success, th.goal-success{
+	background: #c8ffb2 !important;
+}
+

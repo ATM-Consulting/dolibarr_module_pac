@@ -246,12 +246,12 @@ ksort($TCatAff);
 		}
 
 
-		$sql .= ' WHERE (acr.element_type = "user") AND (ac.datep BETWEEN "'.$date_deb.' 00:00:00" AND "'.$date_fin.' 23:59:59") ';
+		$sql .= ' WHERE (acr.element_type = "user") AND (ac.datep BETWEEN "'.$date_deb.' 00:00:00" AND "'.$date_fin.' 23:59:59") AND percent=100 ';
 		if($fk_usergroup >0){
 			$sql.=" AND ugu.fk_usergroup=".	$fk_usergroup;
 		}
 
-		$sql .= ' GROUP BY cac.code, acex.etape, acr.fk_element ';
+		$sql .= ' GROUP BY acex.etape, acr.fk_element ';
 		$sql .= ' ORDER BY acr.fk_element';
 		//echo $sql;
 		$resql = $db->query($sql);
@@ -353,7 +353,7 @@ ksort($TCatAff);
 				$TEvent[$fk_user]['@']['propal']['validated']++;
 				$TEvent[$fk_user]['@']['propal']['amount_validated']+=$line->amount;
 				$TEvent[$fk_user]['@']['propal']['validated_ref'][]=$line->ref;
-				$TEvent[$fk_user]['@']['propal']['validated_refs'] = implode(', ', $TEvent[$fk_user]['propal']['validated_ref']);
+				$TEvent[$fk_user]['@']['propal']['validated_refs'] = empty($TEvent[$fk_user]['propal']['validated_ref']) ? '' :implode(', ', $TEvent[$fk_user]['propal']['validated_ref']);
 			}
 
 		}
@@ -372,7 +372,7 @@ ksort($TCatAff);
 				$TEvent[$fk_user]['@']['propal']['signed']++;
 				$TEvent[$fk_user]['@']['propal']['amount_signed']+=$line->amount;
 				$TEvent[$fk_user]['@']['propal']['signed_ref'][]=$line->ref;
-				$TEvent[$fk_user]['@']['propal']['signed_refs'] = implode(', ', $TEvent[$fk_user]['propal']['signed_ref']);
+				$TEvent[$fk_user]['@']['propal']['signed_refs'] = empty($TEvent[$fk_user]['propal']['signed_ref']) ? '' : implode(', ', $TEvent[$fk_user]['propal']['signed_ref']);
 
 			}
 		}

@@ -105,22 +105,85 @@ print '<td align="center" width="20">&nbsp;</td>';
 print '<td align="center" width="100">'.$langs->trans("Value").'</td>'."\n";
 
 
-// Example with a yes / no select
+_print_on_off('PAC_DISPLAY_K_AMOUNT');
+
+
 $var=!$var;
+$confkey= 'PAC_COMERCIAL_FOLLOWUP_PARENT_CAT';
 print '<tr '.$bc[$var].'>';
-print '<td>'.$langs->trans("ParamLabel").'</td>';
+print '<td>';
+print $langs->trans($confkey);
+print '</td>';
 print '<td align="center" width="20">&nbsp;</td>';
 print '<td align="right" width="300">';
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
-print '<input type="hidden" name="action" value="set_CONSTNAME">';
-print $form->selectyesno("CONSTNAME",$conf->global->CONSTNAME,1);
+print '<input type="hidden" name="action" value="set_'.$confkey.'">';
+print $form->select_all_categories('customer',$conf->global->{$confkey},$confkey);
 print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
 print '</form>';
 print '</td></tr>';
+
+$var=!$var;
+$confkey= 'PAC_COMERCIAL_FOLLOWUP_DEFAULT_GLOBAL_GOAL';
+print '<tr '.$bc[$var].'>';
+print '<td>';
+print $langs->trans($confkey);
+print '</td>';
+print '<td align="center" width="20">&nbsp;</td>';
+print '<td align="right" width="300">';
+print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="action" value="set_'.$confkey.'">';
+print '<input type="number" name="'.$confkey.'" value="'.$conf->global->{$confkey}.'">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print '</form>';
+print '</td></tr>';
+
+
+$var=!$var;
+$confkey= 'PAC_COMERCIAL_FOLLOWUP_DEFAULT_USER_GOAL';
+print '<tr '.$bc[$var].'>';
+print '<td>';
+print $langs->trans($confkey);
+print '</td>';
+print '<td align="center" width="20">&nbsp;</td>';
+print '<td align="right" width="300">';
+print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+print '<input type="hidden" name="action" value="set_'.$confkey.'">';
+print '<input type="number" name="'.$confkey.'" value="'.$conf->global->{$confkey}.'">';
+print '<input type="submit" class="button" value="'.$langs->trans("Modify").'">';
+print '</form>';
+print '</td></tr>';
+
 
 print '</table>';
 
 llxFooter();
 
 $db->close();
+
+
+
+function _print_on_off($confkey, $title = false, $desc ='')
+{
+    global $var, $bc, $langs, $conf;
+    $var=!$var;
+    
+    print '<tr '.$bc[$var].'>';
+    print '<td>'.$langs->trans($title?$title:$confkey);
+    if(!empty($desc))
+    {
+        print '<br><small>'.$langs->trans($desc).'</small>';
+    }
+    print '</td>';
+    print '<td align="center" width="20">&nbsp;</td>';
+    print '<td align="center" width="300">';
+    print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
+    print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
+    print '<input type="hidden" name="action" value="set_'.$confkey.'">';
+    print ajax_constantonoff($confkey);
+    print '</form>';
+    print '</td></tr>';
+}
