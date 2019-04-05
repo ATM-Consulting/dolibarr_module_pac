@@ -120,11 +120,13 @@ div.rotate90 {
 				<thead>
 					<tr style="text-align:left;" class="liste_titre nodrag nodrop">
 						<th class="liste_titre" rowspan="2">Utilisateur</th>
-						<?php
-ksort($TCatAff);
-						 foreach ($TCatAff as $code=>$dummy){ ?>
-							<th class="liste_titre" ><div class="rotate90"><?php echo $TData_step[$code] ?></div></th>
-						<?php } ?>
+                        <?php
+                        if(!empty($TCatAff)){
+                            ksort($TCatAff);
+                            foreach ($TCatAff as $code=>$dummy){
+                                print '<th class="liste_titre" ><div class="rotate90">'.$TData_step[$code].'</div></th>';
+                            }
+                        }?>
 						<th class="liste_titre soc" rowspan="2"><div class="rotate90">Nombre de tiers crées</div></th>
 						<th class="liste_titre propal" rowspan="2"><div class="rotate90">Nombre de propale créées</div></th>
 						<th class="liste_titre propal" rowspan="2"><div class="rotate90">Montant</div></th>
@@ -136,86 +138,91 @@ ksort($TCatAff);
 					</tr>
 				</thead>
 				<tbody>
-					<?php
-//pre($TData,1);exit;
-					foreach ($TData as $fk_user=>$TData1){
+<?php
+                if(!empty($TCatAff)) {
+                    foreach ($TData as $fk_user => $TData1) {
 
-						$user = new User($db);
-						$user->fetch($fk_user);
+                        $user = new User($db);
+                        $user->fetch($fk_user);
 
-						?>
-						<tr>
-							<td><?php echo $user->getNomUrl(1); ?></td>
+                        ?>
+                        <tr>
+                            <td><?php echo $user->getNomUrl(1); ?></td>
 
-							<?php foreach($TCatAff as $code=>$dummy) {
+                            <?php foreach ($TCatAff as $code => $dummy) {
 //var_dump($TData1);
-								if(empty($TData1[$code])) {
-									echo '<td>&nbsp;</td>';
-								}
-								else {
+                                if (empty($TData1[$code])) {
+                                    echo '<td>&nbsp;</td>';
+                                } else {
 
-										$TData2 = $TData1[$code];
+                                    $TData2 = $TData1[$code];
 
-								echo '<td>';
-								$aff_data = $TData2['nb'];
+                                    echo '<td>';
+                                    $aff_data = $TData2['nb'];
 
-								if(!empty($TData2['TFk_soc'])) {
+                                    if (!empty($TData2['TFk_soc'])) {
 
-									$TSociete = array();
-									foreach($TData2['TFk_soc'] as $fk_soc) {
-										$societe = getSociete($fk_soc);
+                                        $TSociete = array();
+                                        foreach ($TData2['TFk_soc'] as $fk_soc) {
+                                            $societe = getSociete($fk_soc);
 
-										if(($societe->client == 2 || $societe->client == 3)
-										&& $societe->date_creation > strtotime('-3month')) {
-											$societe->client = 7;
-										}
+                                            if (($societe->client == 2 || $societe->client == 3)
+                                                && $societe->date_creation > strtotime('-3month')) {
+                                                $societe->client = 7;
+                                            }
 
-										if($societe->client == 2 || $societe->client == 3) {
-											$societe->client = 2;
-										}
+                                            if ($societe->client == 2 || $societe->client == 3) {
+                                                $societe->client = 2;
+                                            }
 
-										$TSociete[$societe->client][] = $societe;
-									}
+                                            $TSociete[$societe->client][] = $societe;
+                                        }
 
-									$TNB=array();
-									if(count($TSociete[1]))$TNB['client'] = '<span class="client" title="nb. client">'.count($TSociete[1]).'</span>';
-									if(count($TSociete[2]))$TNB['prospect'] = '<span class="prospect" title="nb. prospect">'.count($TSociete[2]).'</span>';
-									if(count($TSociete[7]))$TNB['newprospect'] = '<span class="newprospect" title="nb. prospect de moins de 3 mois">'.count($TSociete[7]).'</span>';
+                                        $TNB = array();
+                                        if (count($TSociete[1])) $TNB['client'] = '<span class="client" title="nb. client">' . count($TSociete[1]) . '</span>';
+                                        if (count($TSociete[2])) $TNB['prospect'] = '<span class="prospect" title="nb. prospect">' . count($TSociete[2]) . '</span>';
+                                        if (count($TSociete[7])) $TNB['newprospect'] = '<span class="newprospect" title="nb. prospect de moins de 3 mois">' . count($TSociete[7]) . '</span>';
 
-									if(!empty($TNB)) {
+                                        if (!empty($TNB)) {
 
-										$aff_data.=' ('.implode(' + ',$TNB).')';
+                                            $aff_data .= ' (' . implode(' + ', $TNB) . ')';
 
-									}
-								}
+                                        }
+                                    }
 
-								echo !empty($TData1) ? '<a href="'.dol_buildpath('/pac/listactions.php',1).'?action=show_month&year='.date('Y', strtotime($date_deb)).'&month='.date('m', strtotime($date_deb)).'&day=0&usertodo='.$fk_user.'&step='.$code.'">'.$aff_data.'</a>' : '';
+                                    echo !empty($TData1) ? '<a href="' . dol_buildpath('/pac/listactions.php', 1) . '?action=show_month&year=' . date('Y', strtotime($date_deb)) . '&month=' . date('m', strtotime($date_deb)) . '&day=0&usertodo=' . $fk_user . '&step=' . $code . '">' . $aff_data . '</a>' : '';
 //								echo $aff_data;
-									echo '</td>';
-								}
-								
+                                    echo '</td>';
+                                }
 
-							} ?>
-							<td class="soc"><?php echo (int)$TData1['@']['soc_created'] ?></td>
-							<td class="propal" align="right"><?php echo (int)$TData1['@']['propal']['validated'].img_help(1,$TData1['@']['propal']['validated_refs']); ?></td>
-							<td class="propal" align="right"><?php echo price($TData1['@']['propal']['amount_validated']) ?></td>
-							<td class="taux" align="right"><?php
-							if($TData1['@']['propal']['signed'] + $TData1['@']['propal']['notsigned']>0) {
-								echo round($TData1['@']['propal']['signed'] / ($TData1['@']['propal']['signed'] + $TData1['@']['propal']['notsigned']) * 100).'%
-									/ '.round($TData1['@']['propal']['amount_signed'] / ($TData1['@']['propal']['amount_signed'] + $TData1['@']['propal']['amount_notsigned']) * 100).'%';
-								}
-								else {
-									echo 'N/A';
-								}
 
-							?></td>
-							<td class="propal_signed" align="right"><?php echo (int)$TData1['@']['propal']['signed'].img_help(1,$TData1['@']['propal']['signed_refs']);?></td>
-							<td class="propal_signed" align="right"><?php echo price($TData1['@']['propal']['amount_signed']) ?></td>
-							<td class="propal_encours" align="right"><?php echo (int)$TData1['@']['propal']['allvalidated'].img_help(1,$TData1['@']['propal']['allvalidated_refs']); ?></td>
-							<td class="propal_encours" align="right"><?php echo price($TData1['@']['propal']['amount_allvalidated']) ?></td>
-						</tr>
-					<?php
-					}
+                            } ?>
+                            <td class="soc"><?php echo (int)$TData1['@']['soc_created'] ?></td>
+                            <td class="propal"
+                                align="right"><?php echo (int)$TData1['@']['propal']['validated'] . img_help(1, $TData1['@']['propal']['validated_refs']); ?></td>
+                            <td class="propal"
+                                align="right"><?php echo price($TData1['@']['propal']['amount_validated']) ?></td>
+                            <td class="taux" align="right"><?php
+                                if ($TData1['@']['propal']['signed'] + $TData1['@']['propal']['notsigned'] > 0) {
+                                    echo round($TData1['@']['propal']['signed'] / ($TData1['@']['propal']['signed'] + $TData1['@']['propal']['notsigned']) * 100) . '%
+									/ ' . round($TData1['@']['propal']['amount_signed'] / ($TData1['@']['propal']['amount_signed'] + $TData1['@']['propal']['amount_notsigned']) * 100) . '%';
+                                } else {
+                                    echo 'N/A';
+                                }
+
+                                ?></td>
+                            <td class="propal_signed"
+                                align="right"><?php echo (int)$TData1['@']['propal']['signed'] . img_help(1, $TData1['@']['propal']['signed_refs']); ?></td>
+                            <td class="propal_signed"
+                                align="right"><?php echo price($TData1['@']['propal']['amount_signed']) ?></td>
+                            <td class="propal_encours"
+                                align="right"><?php echo (int)$TData1['@']['propal']['allvalidated'] . img_help(1, $TData1['@']['propal']['allvalidated_refs']); ?></td>
+                            <td class="propal_encours"
+                                align="right"><?php echo price($TData1['@']['propal']['amount_allvalidated']) ?></td>
+                        </tr>
+                        <?php
+                    }
+                }
 					?>
 
 				</tbody>
@@ -246,12 +253,12 @@ ksort($TCatAff);
 		}
 
 
-		$sql .= ' WHERE (acr.element_type = "user") AND (ac.datep BETWEEN "'.$date_deb.' 00:00:00" AND "'.$date_fin.' 23:59:59") ';
+		$sql .= ' WHERE (acr.element_type = "user") AND (ac.datep BETWEEN "'.$date_deb.' 00:00:00" AND "'.$date_fin.' 23:59:59") AND percent=100 ';
 		if($fk_usergroup >0){
 			$sql.=" AND ugu.fk_usergroup=".	$fk_usergroup;
 		}
 
-		$sql .= ' GROUP BY cac.code, acex.etape, acr.fk_element ';
+		$sql .= ' GROUP BY acex.etape, acr.fk_element ';
 		$sql .= ' ORDER BY acr.fk_element';
 		//echo $sql;
 		$resql = $db->query($sql);
@@ -353,7 +360,7 @@ ksort($TCatAff);
 				$TEvent[$fk_user]['@']['propal']['validated']++;
 				$TEvent[$fk_user]['@']['propal']['amount_validated']+=$line->amount;
 				$TEvent[$fk_user]['@']['propal']['validated_ref'][]=$line->ref;
-				$TEvent[$fk_user]['@']['propal']['validated_refs'] = implode(', ', $TEvent[$fk_user]['propal']['validated_ref']);
+				$TEvent[$fk_user]['@']['propal']['validated_refs'] = empty($TEvent[$fk_user]['propal']['validated_ref']) ? '' :implode(', ', $TEvent[$fk_user]['propal']['validated_ref']);
 			}
 
 		}
@@ -372,7 +379,7 @@ ksort($TCatAff);
 				$TEvent[$fk_user]['@']['propal']['signed']++;
 				$TEvent[$fk_user]['@']['propal']['amount_signed']+=$line->amount;
 				$TEvent[$fk_user]['@']['propal']['signed_ref'][]=$line->ref;
-				$TEvent[$fk_user]['@']['propal']['signed_refs'] = implode(', ', $TEvent[$fk_user]['propal']['signed_ref']);
+				$TEvent[$fk_user]['@']['propal']['signed_refs'] = empty($TEvent[$fk_user]['propal']['signed_ref']) ? '' : implode(', ', $TEvent[$fk_user]['propal']['signed_ref']);
 
 			}
 		}

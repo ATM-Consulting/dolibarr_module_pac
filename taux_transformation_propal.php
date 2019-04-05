@@ -89,9 +89,9 @@ function _get_propales_signees_commercial($date_deb, $date_fin){
 		
 		$TPropales= _get_propales_commercial($date_deb, $date_fin);
 		$TPropalesSignees = _get_propales_signees_commercial($date_deb, $date_fin);
-		//$TData = array_merge_recursive($TPropales,$TPropalesSignees);
+		$TData = array_merge_recursive($TPropales,$TPropalesSignees);
 
-		foreach ($TPropales as $ouverte){
+		foreach ($TData as $ouverte){
 			//var_dump($ouverte);
 
 
