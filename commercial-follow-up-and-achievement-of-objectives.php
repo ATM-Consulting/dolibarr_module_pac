@@ -459,11 +459,14 @@ function _print_rapport() {
         $totalLine['totalDiffCumul'] .= displayAmount($global_totalSigned - $global_followupGoal);
         $totalLine['totalDiffCumul'] .= '</th>';
 
+        $goalRatio = calcRatio($dateInfos->facture->total, $followupGoal);
+        $goalRatioCumul = calcRatio($dateInfos->facture->cumul, $global_followupGoal);
+
         $totalLine['totalCAFacture'] .= '<th class="border-left-heavy border-top-heavy '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">'.displayAmount($dateInfos->facture->total).'</th>';
-        $totalLine['totalCAFactureCumule'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">'.displayAmount($dateInfos->facture->cumul).'</th>';
+        $totalLine['totalCAFactureCumule'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatioCumul).'" style="text-align: center;" colspan="3">'.displayAmount($dateInfos->facture->cumul).'</th>';
 
         $calc = $dateInfos->facture->cumul/$global_followupGoal*100;
-        $totalLine['totalCAFactureCumulePercent'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatio).'" style="text-align: center;" colspan="3">';
+        $totalLine['totalCAFactureCumulePercent'] .= '<th class="border-left-heavy border-top-light '.percentClass($goalRatioCumul).'" style="text-align: center;" colspan="3">';
         $totalLine['totalCAFactureCumulePercent'] .= $form->textwithtooltip(price($calc), displayAmount($dateInfos->facture->cumul).' / '.displayAmount($global_followupGoal).' = '.price($calc).'%', 3);
         $totalLine['totalCAFactureCumulePercent'] .= '%</th>';
     }
