@@ -174,8 +174,16 @@
 										
 									}
 								}
-								
-								echo !empty($TData2[$code]) ? '<a href="'.dol_buildpath('/comm/action/index.php',1).'?action=show_month&year='.date('Y', strtotime($date_deb)).'&month='.date('m', strtotime($date_deb)).'&day=0&usertodo='.$fk_user.'&actioncode='.$code.'">'.$aff_data.'</a>' : '';
+
+								if(! empty($TData2[$code]))
+                                {
+                                    $link = dol_buildpath('/comm/action/index.php',1) . '?action=show_month';
+                                    $link.= '&amp;year=' . date('Y', strtotime($date_deb));
+                                    $link.= '&amp;month=' . date('m', strtotime($date_deb));
+                                    $link.= '&amp;day=0&amp;filtert=' . $fk_user . '&amp;actioncode=' . $code;
+
+                                    echo '<a href="' . $link . '">' . $aff_data . '</a>';
+                                }
 								?>
 								</td>
 							

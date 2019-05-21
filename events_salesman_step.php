@@ -160,43 +160,52 @@ div.rotate90 {
 
 										$TData2 = $TData1[$code][$step];
 
-								echo '<td>';
-								$aff_data = $TData2['nb'];
+                                        echo '<td>';
+                                        $aff_data = $TData2['nb'];
 
-								if(!empty($TData2['TFk_soc'])) {
+                                        if(!empty($TData2['TFk_soc'])) {
 
-									$TSociete = array();
-									foreach($TData2['TFk_soc'] as $fk_soc) {
-										$societe = getSociete($fk_soc);
+                                            $TSociete = array();
+                                            foreach($TData2['TFk_soc'] as $fk_soc) {
+                                                $societe = getSociete($fk_soc);
 
-										if(($societe->client == 2 || $societe->client == 3)
-										&& $societe->date_creation > strtotime('-3month')) {
-											$societe->client = 7;
-										}
+                                                if(($societe->client == 2 || $societe->client == 3)
+                                                && $societe->date_creation > strtotime('-3month')) {
+                                                    $societe->client = 7;
+                                                }
 
-										if($societe->client == 2 || $societe->client == 3) {
-											$societe->client = 2;
-										}
+                                                if($societe->client == 2 || $societe->client == 3) {
+                                                    $societe->client = 2;
+                                                }
 
-										$TSociete[$societe->client][] = $societe;
-									}
+                                                $TSociete[$societe->client][] = $societe;
+                                            }
 
-									$TNB=array();
-									if(count($TSociete[1]))$TNB['client'] = '<span class="client" title="nb. client">'.count($TSociete[1]).'</span>';
-									if(count($TSociete[2]))$TNB['prospect'] = '<span class="prospect" title="nb. prospect">'.count($TSociete[2]).'</span>';
-									if(count($TSociete[7]))$TNB['newprospect'] = '<span class="newprospect" title="nb. prospect de moins de 3 mois">'.count($TSociete[7]).'</span>';
+                                            $TNB=array();
+                                            if(count($TSociete[1]))$TNB['client'] = '<span class="client" title="nb. client">'.count($TSociete[1]).'</span>';
+                                            if(count($TSociete[2]))$TNB['prospect'] = '<span class="prospect" title="nb. prospect">'.count($TSociete[2]).'</span>';
+                                            if(count($TSociete[7]))$TNB['newprospect'] = '<span class="newprospect" title="nb. prospect de moins de 3 mois">'.count($TSociete[7]).'</span>';
 
-									if(!empty($TNB)) {
+                                            if(!empty($TNB)) {
 
-										$aff_data.=' ('.implode(' + ',$TNB).')';
+                                                $aff_data.=' ('.implode(' + ',$TNB).')';
 
-									}
-								}
+                                            }
+                                        }
 
-								echo !empty($TData2) ? '<a href="'.dol_buildpath('/comm/action/index.php',1).'?action=show_month&year='.date('Y', strtotime($date_deb)).'&month='.date('m', strtotime($date_deb)).'&day=0&usertodo='.$fk_user.'&actioncode='.$code.'">'.$aff_data.'</a>' : '';
+                                        if(! empty($TData2))
+                                        {
+                                            $link = dol_buildpath('/comm/action/index.php',1) . '?action=show_month';
+                                            $link.= '&amp;year=' . date('Y', strtotime($date_deb));
+                                            $link.= '&amp;month=' . date('m', strtotime($date_deb));
+                                            $link.= '&amp;day=0&amp;filtert=' . $fk_user . '&amp;actioncode=' . $code;
 
-									echo '</td>';
-								}
+                                            echo '<a href="' . $link . '">' . $aff_data . '</a>';
+                                        }
+
+
+                                        echo '</td>';
+                                    }
 								}
 
 							} ?>

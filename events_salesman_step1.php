@@ -190,8 +190,16 @@ div.rotate90 {
                                         }
                                     }
 
-                                    echo !empty($TData1) ? '<a href="' . dol_buildpath('/pac/listactions.php', 1) . '?action=show_month&year=' . date('Y', strtotime($date_deb)) . '&month=' . date('m', strtotime($date_deb)) . '&day=0&usertodo=' . $fk_user . '&step=' . $code . '">' . $aff_data . '</a>' : '';
-//								echo $aff_data;
+                                    if(! empty($TData1))
+                                    {
+                                        $link = dol_buildpath('/pac/listactions.php', 1) . '?action=show_month';
+                                        $link.= '&amp;year=' . date('Y', strtotime($date_deb));
+                                        $link.= '&amp;month=' . date('m', strtotime($date_deb));
+                                        $link.= '&amp;day=0&amp;filtert=' . $fk_user . '&amp;step=' . $code;
+
+                                        echo '<a href="' . $link . '">' . $aff_data . '</a>';
+                                    }
+
                                     echo '</td>';
                                 }
 
