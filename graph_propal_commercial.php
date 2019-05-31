@@ -25,10 +25,12 @@
 		$TData = array();
 		
 		
-		$sql = 'SELECT COUNT(p.rowid) AS nbPropales, p.tms AS dateO, p.fk_user_author AS auteur, SUM(p.total_ht) AS total ';
+		$sql = 'SELECT COUNT(p.rowid) AS nbPropales, p.tms AS dateO, sc.fk_user AS auteur, SUM(p.total_ht) AS total ';
 		$sql .= 'FROM '.MAIN_DB_PREFIX.'propal p ';
+		$sql .= 'INNER JOIN ' . MAIN_DB_PREFIX . 'societe s ON s.rowid = p.fk_soc ';
+		$sql .= 'LEFT JOIN ' . MAIN_DB_PREFIX . 'societe_commerciaux sc ON sc.fk_soc = s.rowid ';
 		$sql .= 'WHERE p.datep BETWEEN "'.$date_deb.'" AND "'.$date_fin.'" ';
-		$sql .= 'GROUP BY p.fk_user_author ';
+		$sql .= 'GROUP BY sc.fk_user ';
 		$sql .= 'ORDER BY p.rowid ';
 
 		$resql = $db->query($sql);
@@ -44,8 +46,8 @@
 				);
 			}
 		}
-		else{
-			var_dump($db);
+		else {
+			dol_print_error($db);
 		}
 	//	var_dump($TData);
 		return $TData;

@@ -3,68 +3,73 @@
 	require 'config.php';
 	
 	$action = GETPOST('action');
-	
-	//TODO conf
-	$TPac=array(
-		/*array(
-			'Label'=>'Opportunity'
-			,'special'=>'budget'
-		)
-		,*/array(
-			'label'=>'Premier contact' //TODO trans
-			,'min'=>0
-			,'max'=>10
-		)
-		,array(
-			'label'=>'Attente de demo'
-			,'min'=>10
-			,'max'=>30
-		)
-		,array(
-			'label'=>'intéressé'
-			,'min'=>30
-			,'max'=>60
-		)
-		,array(
-			'label'=>'très intéressé'
-			,'min'=>60
-			,'max'=>90
-		)
-		,array(
-			'label'=>'Signé'
-			,'min'=>100
-			,'max'=>100
-			,'special'=>'signed'
-		)
-		,array(
-			'label'=>'Non signé'
-			,'min'=>100
-			,'max'=>100
-			,'special'=>'notsigned'
-		)
-		
-		//TODO special signé, non signé
-		//TODO finir le module, il ne s'agissait que d'une esquisse
-	);
-	
+
+	$TInterests = array(
+	    array(
+	        'code' => ''
+            , 'label' => 'Non qualifié'
+            , 'fromDict' => false
+        )
+    );
+
+	$sql = 'SELECT code, label
+            FROM ' . MAIN_DB_PREFIX . 'c_pac_interest
+            WHERE active = 1';
+
+	$resql = $db->query($sql);
+
+	if(! $resql)
+    {
+        llxHeader('', 'PAC');
+
+        print_db_error($db);
+
+        llxFooter();
+        $db->close();
+
+        exit;
+    }
+
+	$num = $db->num_rows($resql);
+
+	for($i = 0; $i < $num; $i++)
+    {
+        $interest = $db->fetch_array($resql);
+        $interest['fromDict'] = true;
+	    $TInterests[] = $interest;
+    }
+
+	$TInterests[] = array(
+		'code' => '__STATUS_SIGNED'
+        , 'label' => 'Signé'
+        , 'fromDict' => false
+    );
+
+	$TInterests[] =	array(
+		'code' => '__STATUS_NOTSIGNED'
+        , 'label' => 'Non signé'
+        , 'fromDict' => false
+    );
+
+
 	$TPeriod=array(
 		array(
-			'label'=>'dans le mois'
+			'label'=>'Dans le mois'
 			,'end'=>1 // nombre de jour mois
 		)
 		,array(
-			'label'=>'entre 1 et 3 mois'
+			'label'=>'Entre 1 et 3 mois'
 			,'start'=>1 
 			,'end'=>3
 		)
 		,array(
-			'label'=>'entre 3 et 9 mois'
+			'label'=>'Entre 3 et 9 mois'
 			,'start'=>3 
 			,'end'=>9
 		
 		)
 		,array(
-			'label'=>'au delà'
+			'label'=>'Au-delà'
 			,'start'=>9 
 		)
 	);
@@ -75,12 +80,12 @@
 			break;
 		default:
 		
-			_card($TPac,$TPeriod);
+			_card($TInterests,$TPeriod);
 			
 			break;
 	}
 	
-function _card(&$TPac,&$TPeriod) {
+function _card(&$TInterests, &$TPeriod) {
 	global $conf,$db,$user,$langs;
 	
 	llxHeader('', 'PAC', '', '', 0, 0, array('/pac/js/pac.js' ), array('/pac/css/pac.css') );
@@ -88,19 +93,21 @@ function _card(&$TPac,&$TPeriod) {
 	
 	$form=new Form($db);
 
-	echo '<div>';
+	echo '<div>' . $langs->trans('Author') . '&nbsp;: ';
 	echo $form->select_dolusers($user->id,'fk_user',1);
 	
-	echo '<button id="refresh">'.$langs->trans('Refresh').'</button>';
+	echo '&nbsp;<button id="refresh">'.$langs->trans('Refresh').'</button>';
 	
-	echo '</div><div style="clear: both;"></div>';
+	echo '</div>';
 	
-	$width = floor(100 / count($TPac) * 10) /10 ;
+	$width = floor(100 / count($TInterests) * 10) /10 ;
 	
-	foreach($TPac as $k=>&$TData) {
+	foreach($TInterests as $k=> &$TData)
+	{
 		?><div style="width:<?php echo $width; ?>%; display:inline-block;"><h2><?php echo $TData['label']; ?></h2></div><?php
 	
 	}
+
 	foreach($TPeriod as $kp=>$period) {
 		
 		?>
@@ -110,11 +117,15 @@ function _card(&$TPac,&$TPeriod) {
 		
 		
 		
-		foreach($TPac as $k=>&$TData) {
+		foreach($TInterests as $k=>&$TData) {
 			
 			?>
 			<div class="step" style="width:<?php echo $width; ?>%">
-				<ul class="<?php echo empty($TData['special']) ? 'connectedSortable' : 'special'; ?>" id="step-<?php echo $kp.'-'.$k ?>" min="<?php echo __val($TData['min'],0) ?>" max="<?php echo __val($TData['max'],0) ?>"  month_start="<?php echo __val($period['start'],0) ?>"  month_end="<?php echo __val($period['end'],0) ?>"  special="<?php echo __val($TData['special'],'') ?>">
+				<ul class="<?php echo ! empty($TData['fromDict']) ? 'connectedSortable' : 'special'; ?>"
+                    id="step-<?php echo $kp.'-'.$k ?>"
+                    data-code="<?php echo dol_escape_htmltag($TData['code']); ?>"
+                    data-month-start="<?php echo __val($period['start'],0) ?>"
+                    data-month-end="<?php echo __val($period['end'],0) ?>">
 					
 				</ul>
 				<div class="total"></div>			
