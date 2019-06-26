@@ -19,12 +19,12 @@ $(document).ready(function() {
       ,receive:function(event, ui) {
       	
       	$li = ui.item;
-      	var propalid = $li.attr('propal-id');
+      	var propalid = $li.attr('data-propal-id');
       	$ul = $li.closest('ul');
       	
       	var proba = $ul.attr('min');
       	
-      	var end = $ul.attr('month_end');
+      	var end = $ul.attr('data-month-end');
       	
       	$.ajax({
 			url:"script/interface.php"
@@ -55,22 +55,19 @@ function refreshPac() {
 		var $ul = $(item);
 		
 		$ul.empty();
+		$('.step>.total').html('0,00');
 		
-		var min = $ul.attr('min');
-		var max = $ul.attr('max');
-		var start = $ul.attr('month_start');
-		var end = $ul.attr('month_end');
-		var special = $ul.attr('special');
+		var code = $ul.attr('data-code');
+		var start = $ul.attr('data-month-start');
+		var end = $ul.attr('data-month-end');
 		
 		$.ajax({
 			url:"script/interface.php"
 			,data:{
 				'get':'propals'
-				,'min':min
-				,'max':max
+				,'code':code
 				,'start':start
 				,'end':end
-				,'special':special
 				,'fk_user':$('#fk_user').val()
 				
 			}
@@ -80,10 +77,10 @@ function refreshPac() {
 			var total = 0;
 			
 			var height = 200;
-			
+			console.log(data);
 			$.each(data, function(i,item) {
 				
-				$li = $('<li propal-id="'+item.id+'" />');
+				$li = $('<li data-propal-id="'+item.id+'" />');
 				$li.append('<h3>'+item.link+' : '+item.total_ht_aff+'</h3>'); //TODO complete aff
 				$li.append('<div>'+item.customerLink+'</div>');
 				
