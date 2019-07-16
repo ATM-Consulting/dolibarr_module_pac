@@ -22,7 +22,7 @@
     {
         llxHeader('', 'PAC');
 
-        print_db_error($db);
+        dol_print_error($db);
 
         llxFooter();
         $db->close();
