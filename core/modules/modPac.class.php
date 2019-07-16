@@ -146,7 +146,18 @@ class modPac extends DolibarrModules
         	$conf->pac=new stdClass();
         	$conf->pac->enabled=0;
         }
-		$this->dictionaries=array();
+		$this->dictionaries=array(
+			'langs'=>'pac@pac',
+			'tabname'=>array(MAIN_DB_PREFIX .'c_pac_interest'),		// List of tables we want to see into dictonnary editor
+			'tablib'=>array('DictClientInterest'),													// Label of tables
+			'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active FROM ' . MAIN_DB_PREFIX . 'c_pac_interest as f'),	// Request to select fields
+			'tabsqlsort'=>array('label ASC'),																					// Sort order
+			'tabfield'=>array('code,label'),																					// List of fields (result of select to show dictionary)
+			'tabfieldvalue'=>array('code,label'),																				// List of fields (list of fields to edit a record)
+			'tabfieldinsert'=>array('code,label'),																			// List of fields (list of fields for insert)
+			'tabrowid'=>array('rowid'),																									// Name of columns with primary key (try to always name it 'rowid')
+			'tabcond'=>array($conf->pac->enabled)												// Condition to show each dictionary
+		);
         /* Example:
         if (! isset($conf->pac->enabled)) $conf->pac->enabled=0;	// This is to avoid warnings
         $this->dictionaries=array(
@@ -391,6 +402,18 @@ class modPac extends DolibarrModules
         $label = 'Date Signature';
         $key = 'date_signature';
         $e->addExtraField($key, $label, 'date', 1, '', 'propal',0,0,'',$param, 1);
+
+		$e=new ExtraFields($this->db);
+		$param= unserialize('a:1:{s:7:"options";a:1:{s:20:"c_pac_interest:label";N;}}');
+		$label = 'Intérêt du client/prospect';
+		$key = 'interest';
+		$e->addExtraField($key, $label, 'sellist', 2, '', 'propal',0,0,'',$param, 1);
+
+		$e=new ExtraFields($this->db);
+		$param= unserialize('a:1:{s:7:"options";a:1:{s:0:"";N;}}');
+		$label = 'Date de clôture prévisionnelle';
+		$key = 'date_cloture_prev';
+		$e->addExtraField($key, $label, 'date', 3, '', 'propal',0,0,'',0,1);
 
 
         // Attribut supplémentaire action comm

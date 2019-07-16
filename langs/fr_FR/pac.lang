@@ -63,3 +63,5 @@ CAFactureCumulePercent=%% CA Facturé
 DateEndPropalShort=Date de fin de la proposition
 CompanySalesman=Commercial
 NoDataToShow=Pas de donnée à afficher
+
+DictClientInterest=Valeurs du champ "Intêret du client/prospect"

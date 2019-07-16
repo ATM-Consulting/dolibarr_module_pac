@@ -12,7 +12,7 @@
 	switch ($get) {
 		case 'propals':
 		
-			__out(_propasals((int)GETPOST('min'),(int)GETPOST('max'),(int)GETPOST('start'),(int)GETPOST('end'),GETPOST('special'),GETPOST('fk_user')), 'json');
+			__out(_propasals(GETPOST('code'), (int)GETPOST('start'), (int)GETPOST('end'), GETPOST('fk_user')), 'json');
 						
 			break;
 		default:
@@ -49,69 +49,94 @@ function _update_proba_propal($fk_propal, $proba,$nb_month, $special = '') {
 	
 }	
 
-function _propasals($min,$max,$start,$end,$special='',$fk_user = 0) {
+
+function _propasals($code, $start, $end, $fk_user = 0)
+{
 	global $db,$langs,$user,$conf;
 	
-	
-	/*
-	 * Retourne les propals avec un taux adéquat
-	 */
-	
-	$PDOdb=new TPDOdb; 
-	
-	if(!empty($special) && empty($start)) {
-			
-		if($special=='signed') {
-			$sql = "SELECT p.rowid FROM ".MAIN_DB_PREFIX."propal p	WHERE p.fk_statut = 2 AND p.date_valid> (NOW() - INTERVAL 30 DAY) "; 
-			
-		}
-		else if($special=='notsigned') {
-			$sql = "SELECT p.rowid FROM ".MAIN_DB_PREFIX."propal p	WHERE p.fk_statut = 3 AND p.date_valid> (NOW() - INTERVAL 30 DAY)"; 
-			
-		}
-		
-					
+	$PDOdb = new TPDOdb;
+
+	$sql = 'SELECT p.rowid
+			FROM ' . MAIN_DB_PREFIX. 'propal p';
+
+	$dateField = 'p.date_valid';
+
+	if($code == '__STATUS_SIGNED')
+	{
+		$sql .= '
+			WHERE p.fk_statut = ' . Propal::STATUS_SIGNED;
 	}
-	else{
-		$sql ="SELECT p.rowid FROM ".MAIN_DB_PREFIX."propal p
-				LEFT JOIN ".MAIN_DB_PREFIX."propal_extrafields ex ON (ex.fk_object = p.rowid)
-				WHERE fk_statut=1 ";
-				
-		if(empty($min)) $sql.=" AND (ex.proba >=0 OR ex.proba IS NULL) AND (ex.proba < ".(int)$max. " OR ex.proba IS NULL)";
-		else $sql.=" AND ex.proba < ".(int)$max. " AND ex.proba>=".(int)$min;
-		
-		if(empty($start)) {
-			$sql.=" AND (ex.date_cloture_prev IS NULL OR ex.date_cloture_prev < NOW() ) ";
+	elseif($code == '__STATUS_NOTSIGNED')
+	{
+		$sql .= '
+			WHERE p.fk_statut = ' . Propal::STATUS_NOTSIGNED;
+	}
+	else
+	{
+		$sql.= '
+			LEFT JOIN ' . MAIN_DB_PREFIX . 'propal_extrafields ex ON ex.fk_object = p.rowid
+			LEFT JOIN ' . MAIN_DB_PREFIX . 'c_pac_interest pi ON pi.rowid = ex.interest
+			WHERE p.fk_statut = ' . Propal::STATUS_VALIDATED;
+
+		if(empty($code))
+		{
+			$sql.= '
+			AND pi.code IS NULL';
 		}
-		else {
-			$sql.=" AND (ex.date_cloture_prev >= (NOW() + INTERVAL ".$start." MONTH) ) ";			
+		else
+		{
+			$sql.= '
+			AND pi.code = "' . $db->escape($code) . '"';
 		}
-		
-		if($end>0) {
-			$sql.=" AND (ex.date_cloture_prev < (NOW() + INTERVAL ".$end." MONTH) ";
-			if(empty($start)) { $sql.=" OR ex.date_cloture_prev IS NULL "; }
-			$sql.=" ) ";			
+
+		$dateField = 'ex.date_cloture_prev';
+	}
+
+	if(empty($start))
+	{
+		$sql.= '
+			AND (' . $dateField . ' IS NULL OR ' . $dateField . ' < NOW() )';
+	}
+	else 
+	{
+		$sql.= '
+			AND (' . $dateField . ' >= (NOW() + INTERVAL ' . intval($start) . ' MONTH) )';
+	}
+
+	if($end > 0)
+	{
+		$sql.= '
+			AND (' . $dateField . ' < (NOW() + INTERVAL ' . intval($end) . ' MONTH)';
+
+		if(empty($start))
+		{
+			$sql.= ' OR ' . $dateField . ' IS NULL';
 		}
-		 	  	 
+
+		$sql.= ' )';
 	}
 	
-	if($fk_user>0) {
-		$sql.= " AND p.fk_user_author = ".$fk_user;
+
+	if($fk_user > 0)
+	{
+		$sql.= '
+			AND p.fk_user_author = ' . intval($fk_user);
 	}
-	
+
 	$TRes = $PDOdb->ExecuteAsArray($sql); 
-				
-	$Tab=array();
-	
-	foreach($TRes as &$row) {
-		
-		$p=new Propal($db);
-		if($p->fetch($row->rowid)>0) {
+
+	$Tab = array();
+
+	foreach($TRes as &$row)
+	{
+		$p = new Propal($db);
+
+		if($p->fetch($row->rowid) > 0) {
 			$soc = new Societe($db);
 			$soc->fetch($p->socid);
-			
+
 			$obj = new stdClass;
-			
+
 			$obj->id = $p->id;
 			$obj->ref = $p->ref;
 			$obj->total_ht_aff = price($p->total_ht);
@@ -120,13 +145,8 @@ function _propasals($min,$max,$start,$end,$special='',$fk_user = 0) {
 			$obj->total_ht = $p->total_ht;
 
 			$Tab[] = $obj;
-			
 		}
-		
 	}
-	
-	
-	
+
 	return $Tab;
-	
 }
