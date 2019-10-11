@@ -9,6 +9,7 @@
 	        'code' => ''
             , 'label' => 'Non qualifié'
             , 'fromDict' => false
+            , 'sortable' => true
         )
     );
 
@@ -118,10 +119,10 @@ function _card(&$TInterests, &$TPeriod) {
 		
 		
 		foreach($TInterests as $k=>&$TData) {
-			
+
 			?>
 			<div class="step" style="width:<?php echo $width; ?>%">
-				<ul class="<?php echo ! empty($TData['fromDict']) ? 'connectedSortable' : 'special'; ?>"
+				<ul class="<?php echo ! empty($TData['fromDict']) ? 'connectedSortable' : (!empty($TData['sortable']) ? 'connectedSortable special' : 'special'); ?>"
                     id="step-<?php echo $kp.'-'.$k ?>"
                     data-code="<?php echo dol_escape_htmltag($TData['code']); ?>"
                     data-month-start="<?php echo __val($period['start'],0) ?>"

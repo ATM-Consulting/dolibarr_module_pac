@@ -414,6 +414,7 @@ class modPac extends DolibarrModules
 		$label = 'Date de clôture prévisionnelle';
 		$key = 'date_cloture_prev';
 		$e->addExtraField($key, $label, 'date', 3, '', 'propal',0,0,'',0,1);
+        $e->addExtraField('proba', 'Probabilité', 'double', 50, '24,8', 'propal',0,0,'',unserialize('a:1:{s:7:"options";a:1:{s:0:"";N;}}'),1);
 
 
         // Attribut supplémentaire action comm

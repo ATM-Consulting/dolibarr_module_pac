@@ -23,7 +23,7 @@
 	switch ($put) {
 		case 'propal':
 		
-			_update_proba_propal((int)GETPOST('propalid'), GETPOST('proba'), GETPOST('end'), GETPOST('special'));
+			_update_proba_propal((int)GETPOST('propalid'), GETPOST('proba'), GETPOST('end'), GETPOST('interest'), GETPOST('special'));
 						
 			break;
 		default:
@@ -31,19 +31,21 @@
 			break;
 	}
 	
-function _update_proba_propal($fk_propal, $proba,$nb_month, $special = '') {
+function _update_proba_propal($fk_propal, $proba,$nb_month, $interest, $special = '') {
 	//TODO pouvoir signer propal directmeent à ce niveau ?
 	
-	global $db,$langs,$user,$conf;
+	global $db,$user;
 	
 	$p=new Propal($db);
 	if($p->fetch($fk_propal)) {
 		
-		$p->array_options['options_proba'] = (int)$proba;
-		$p->array_options['options_date_cloture_prev'] = strtotime('+'.$nb_month.' month' );
-		
-		
-		$p->update_extrafields($user);
+        $p->array_options['options_proba'] = (int) $proba;
+        $p->array_options['options_interest'] = dol_getIdFromCode($db, $interest, 'c_pac_interest', 'code', 'rowid');
+        $p->array_options['options_date_cloture_prev'] = strtotime('+'.$nb_month.' month' );
+
+        // update_extrafields() is available in 6.0 and under to call insertExtraFields()
+		if (method_exists($p, 'update_extrafields')) $p->update_extrafields($user);
+		else $p->insertExtraFields('', $user);
 	}
 	
 	

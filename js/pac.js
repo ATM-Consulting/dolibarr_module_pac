@@ -33,6 +33,7 @@ $(document).ready(function() {
 				,'propalid':propalid
 				,'proba':proba
 				,'end': end
+                ,'interest': $ul.data('code')
 			}
 			,dataType:'json'
 		});
