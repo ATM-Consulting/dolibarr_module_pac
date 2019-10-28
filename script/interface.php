@@ -97,7 +97,7 @@ function _propasals($code, $start, $end, $fk_user = 0)
 	if(empty($start))
 	{
 		$sql.= '
-			AND (' . $dateField . ' IS NULL OR ' . $dateField . ' < NOW() )';
+			AND (' . $dateField . ' IS NULL OR ' . $dateField . ' < (NOW() + INTERVAL 1 MONTH) )';
 	}
 	else 
 	{
