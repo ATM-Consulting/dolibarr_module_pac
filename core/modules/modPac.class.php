@@ -58,7 +58,7 @@ class modPac extends DolibarrModules
 		// Module description, used if translation string 'ModuleXXXDesc' not found (where XXX is value of numeric property 'numero' of module)
 		$this->description = "Description of module Pac";
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
-		$this->version = '1.1.1';
+		$this->version = '1.2.0';
 		// Key used in llx_const table to save module status enabled/disabled (where MYMODULE is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		// Where to store the module in setup page (0=common,1=interface,2=others,3=very specific)
@@ -193,8 +193,8 @@ class modPac extends DolibarrModules
 		// $this->rights[$r][5] = 'level2';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		// $r++;
 
-		
-		
+
+
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
 		$this->rights[$r][1] = 'PermChangeGoal';	// Permission label
 		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
@@ -237,7 +237,7 @@ class modPac extends DolibarrModules
 									'target'=>'',
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
-		 
+
 		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
 									'titre'=>$langs->transnoentitiesnoconv('bestPropales'),
@@ -267,7 +267,7 @@ class modPac extends DolibarrModules
 									'target'=>'',
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
-		 
+
 		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
 									'titre'=>$langs->transnoentitiesnoconv('events_salesman'),
@@ -281,7 +281,7 @@ class modPac extends DolibarrModules
 									'target'=>'',
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
-		 
+
                  $this->menu[$r]=array( 'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',                // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_lef$
                                                                         'type'=>'left',                                 // This is a Left menu entry
                                                                         'titre'=>$langs->transnoentitiesnoconv('events_salesman_step'),
@@ -308,7 +308,7 @@ class modPac extends DolibarrModules
 									'target'=>'',
 									'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
-		 
+
 		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 		 		'type'=>'left',			                // This is a Left menu entry
 		 		'titre'=>$langs->transnoentitiesnoconv('MontantProp'),
@@ -322,7 +322,7 @@ class modPac extends DolibarrModules
 		 		'target'=>'',
 		 		'user'=>2);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
-		 
+
 		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=accountancy,fk_leftmenu=customers_bills',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 		 		'type'=>'left',			                // This is a Left menu entry
 		 		'titre'=>'CAByCateg',
@@ -336,8 +336,8 @@ class modPac extends DolibarrModules
 		 		'target'=>'',
 		 		'user'=>1);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
-		 
-		 
+
+
 		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=commercial,fk_leftmenu=pac',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 		     'type'=>'left',			                // This is a Left menu entry
 		     'titre'=>$langs->transnoentitiesnoconv('FollowUpGoal'),
@@ -351,9 +351,9 @@ class modPac extends DolibarrModules
 		     'target'=>'',
 		     'user'=>0);				                // 0=Menu for internal users, 1=external users, 2=both
 		 $r++;
-		 
-		 
-		 
+
+
+
 		// Exports
 		$r=1;
 
@@ -384,7 +384,7 @@ class modPac extends DolibarrModules
 	{
 	    global $conf;
 		$sql = array();
-		
+
 		define('INC_FROM_DOLIBARR',true);
 
 		dol_include_once('/pac/config.php');
